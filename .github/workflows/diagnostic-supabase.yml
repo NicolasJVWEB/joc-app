@@ -27,6 +27,7 @@ jobs:
           echo "HTTP $(appel "$URL/auth/v1/settings" -H "apikey: $CLE")"
           grep -oE '"(mailer_autoconfirm|disable_signup)":[a-z]+' /tmp/corps || cat /tmp/corps; echo
           grep -oE '"email":[a-z]+' /tmp/corps || true
+          echo "Connexion Google activée :"; grep -oE '"google":[a-z]+' /tmp/corps || true
 
           echo "== 3. Tables créées par schema.sql (HTTP 200 attendu) =="
           for t in equipes participants epreuves scores palmares infos reglages programme fiches_privees suivi_orga taches courses depenses spectateurs; do

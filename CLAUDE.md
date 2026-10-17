@@ -17,7 +17,7 @@
 
 - **Site statique** hébergé sur **GitHub Pages**, dépôt **public** `guillaumebrisco-alt/joc-app`.
 - **Pas de build, pas de framework, pas de npm** : HTML, CSS et JavaScript simples, servis tels quels. Un fichier modifié = un site à jour. Ne pas introduire d'outil de build sans accord explicite.
-- **Données dans Supabase** (offre gratuite) : comptes (mail + mot de passe), profils, photos, présences, équipes, épreuves, scores, palmarès. Validé par Guillaume à la place du Google Sheet prévu au départ.
+- **Données dans Supabase** (offre gratuite) : comptes (mail + mot de passe, ou Google ; mot de passe oublié par code à 6 chiffres), profils, photos, présences, équipes, épreuves, scores, palmarès. Validé par Guillaume à la place du Google Sheet prévu au départ.
   - Schéma, sécurité et données de départ : `supabase/schema.sql` (relançable sans perte). Mise en place pas à pas : `docs/supabase.md`.
   - Branchement : `js/config.js` > `supabaseUrl` et `supabaseCle` (clé anon/publishable, publique par nature). Vides = mode démo (fichiers `data/demo/*.csv`, pas de connexion, rien n'est enregistré).
   - Accès : il faut un compte **et** le code JOC (`code_acces`) pour voir quoi que ce soit. Le `code_admin` donne les droits orga. Les codes vivent uniquement dans la table `reglages` de Supabase.

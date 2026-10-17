@@ -8,7 +8,18 @@
   const A = (window.JOC_ACTIONS = window.JOC_ACTIONS || {});
 
   // État des écrans de connexion (pas besoin de le garder après rechargement)
-  const etat = { onglet: "connexion", code: "", liste: null, emailRecup: "" };
+  const etat = { onglet: "connexion", code: "", liste: null, emailRecup: "", google: false };
+
+  // On demande une seule fois à Supabase si la connexion Google est activée
+  DATA.auth.googleDisponible().then((ok) => {
+    etat.google = ok;
+    if (ok && document.querySelector(".zone-google")) document.querySelector(".zone-google").innerHTML = boutonGoogle();
+  });
+
+  const LOGO_GOOGLE = `<svg viewBox="0 0 48 48" width="22" height="22" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.6 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.4 5.7c4.3-4 6.9-9.9 6.9-17.1z"/><path fill="#FBBC05" d="M10.6 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.9-6.1C1 16.6 0 20.2 0 24s1 7.4 2.7 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.3-8.5 2.3-6.2 0-11.5-4.1-13.4-9.8l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/></svg>`;
+  const boutonGoogle = () => `
+    <button class="bouton bouton--google" type="button" data-action="connexion-google">${LOGO_GOOGLE}<span>Continuer avec Google</span></button>
+    <p class="separateur"><span>ou avec ton mail</span></p>`;
 
   // ---------- Connexion / création de compte ----------
 
@@ -23,6 +34,7 @@
       <button class="${etat.onglet === "connexion" ? "actif" : ""}" data-action="onglet-connexion" data-onglet="connexion">J'ai un compte</button>
       <button class="${etat.onglet === "inscription" ? "actif" : ""}" data-action="onglet-connexion" data-onglet="inscription">Créer mon compte</button>
     </div>
+    <div class="zone-google">${etat.google ? boutonGoogle() : ""}</div>
     <form class="carte formulaire" data-form="${etat.onglet}">
       <label>Mail<input type="email" name="email" autocomplete="email" required></label>
       <label>Mot de passe<input type="password" name="mdp" minlength="6" autocomplete="${etat.onglet === "connexion" ? "current-password" : "new-password"}" required></label>
@@ -49,6 +61,11 @@
       <button class="lien" data-action="onglet-connexion" data-onglet="connexion">← Retour à la connexion</button>
     `;
   }
+
+  A["connexion-google"] = async ({ ctx }) => {
+    ctx.toast("Ouverture de Google…");
+    await DATA.auth.connexionGoogle(); // la page part chez Google puis revient connectée
+  };
 
   A["onglet-connexion"] = ({ el, ctx }) => { etat.onglet = el.dataset.onglet; ctx.afficher(); };
 
