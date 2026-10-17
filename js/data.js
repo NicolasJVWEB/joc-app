@@ -277,6 +277,18 @@
     surChangement(rappel) {
       if (!estDemo) sb.auth.onAuthStateChange((evenement, session) => rappel(evenement, session));
     },
+    // Connexion Google : disponible seulement si elle est activée dans Supabase
+    async googleDisponible() {
+      if (estDemo) return false;
+      try {
+        const r = await fetch(`${CFG.supabaseUrl}/auth/v1/settings`, { headers: { apikey: CFG.supabaseCle } });
+        return r.ok && !!(await r.json()).external?.google;
+      } catch (e) { return false; }
+    },
+    async connexionGoogle() {
+      demoInterdit();
+      verifier(await sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: urlSite() } }));
+    },
     async connexion(email, mdp) {
       demoInterdit();
       verifier(await sb.auth.signInWithPassword({ email, password: mdp }));

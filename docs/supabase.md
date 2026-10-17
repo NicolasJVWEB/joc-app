@@ -59,6 +59,21 @@ Supabase est le service gratuit qui stocke les comptes, les profils, les photos,
 3. Dans **Moi** > **Espace orga** > **Participants** : ajouter la liste des copains avec leur équipe.
 4. Donner aux copains le lien de l'app et le **code copains**. Chacun crée son compte, retrouve son prénom dans la liste et complète son profil.
 
+## Connexion avec Google (facultatif)
+
+Le bouton « Continuer avec Google » apparaît tout seul dans l'app dès que Google est activé dans Supabase.
+
+1. Sur https://console.cloud.google.com : créer un projet `JOC`.
+2. **Google Auth Platform** (ou « APIs et services > Écran de consentement OAuth ») : nom de l'app `JOC`, adresse d'assistance = ton mail, audience **Externe**, puis **Publier l'application** (« En production ») pour que tous les comptes Gmail puissent se connecter.
+3. **Clients** > **Créer un client** > type **Application Web** :
+   - Origines JavaScript autorisées : `https://guillaumebrisco-alt.github.io`
+   - URI de redirection autorisés : `https://nkdlishmmutknvmbmgrw.supabase.co/auth/v1/callback`
+   - Copier l'**ID client** et le **code secret du client** (ce secret ne va que dans Supabase, jamais ailleurs).
+4. Supabase > **Authentication** > **Sign In / Providers** > **Google** : activer, coller l'ID client et le secret, **Save**.
+5. Supabase > **Authentication** > **URL Configuration** : vérifier que `https://guillaumebrisco-alt.github.io/joc-app/` est dans **Redirect URLs**.
+
+Un copain qui avait déjà un compte avec la même adresse Gmail retrouve automatiquement son profil.
+
 ## Mettre à jour la base après une évolution de l'app
 
 Quand Claude ajoute des fonctions (par exemple la partie gestion), il faut relancer le script :

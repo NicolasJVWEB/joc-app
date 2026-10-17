@@ -476,6 +476,11 @@ a.programme__ligne:active { background: var(--joc-creme); }
 .chevron { font-size: 26px; color: var(--texte-doux); }
 .titre-section small { font-size: 15px; }
 
+/* Connexion Google */
+.bouton--google { display: flex; align-items: center; justify-content: center; gap: 10px; background: #fff; color: var(--texte); text-shadow: none; font-family: var(--corps); font-weight: 900; font-size: 17px; margin-bottom: 4px; }
+.separateur { display: flex; align-items: center; gap: 10px; color: var(--texte-doux); font-size: 13px; font-weight: 800; margin: 10px 0 14px; }
+.separateur::before, .separateur::after { content: ""; flex: 1; border-top: 2px dashed #d8d4c4; }
+
 /* Message flottant */
 .toast {
   position: fixed; left: 16px; right: 16px; bottom: calc(var(--hauteur-nav) + env(safe-area-inset-bottom) + 14px);
