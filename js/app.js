@@ -56,6 +56,8 @@
     const racine = cle.split("/")[0];
     const onglet = ONGLET_ACTIF[racine] ?? (racine === "accueil" ? "" : racine);
     document.querySelectorAll(".nav a").forEach((a) => a.classList.toggle("actif", a.dataset.onglet === onglet));
+    // Onglet Orga : seulement pour les organisateurs
+    document.querySelector(".nav__orga").hidden = !donnees?.moi?.estAdmin;
   }
 
   function majEtat(resultat) {
