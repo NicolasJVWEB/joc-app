@@ -1,0 +1,40 @@
+# Diagnostic de la mise en place (lancement à la main : Actions > Diagnostic Supabase > Run workflow)
+# Vérifie, avec la clé publique uniquement, où en est la configuration de Supabase et du site.
+name: Diagnostic Supabase
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Vérifications
+        run: |
+          URL=$(grep -oP 'supabaseUrl:\s*"\K[^"]*' js/config.js || true)
+          CLE=$(grep -oP 'supabaseCle:\s*"\K[^"]*' js/config.js || true)
+          appel() { curl -sS -m 20 -o /tmp/corps -w "%{http_code}" "$@" || echo "ERREUR"; }
+
+          echo "== 1. Projet joignable =="
+          echo "HTTP $(appel "$URL/auth/v1/health" -H "apikey: $CLE")"; cat /tmp/corps; echo
+
+          echo "== 2. Réglages de connexion (mailer_autoconfirm=true attendu) =="
+          echo "HTTP $(appel "$URL/auth/v1/settings" -H "apikey: $CLE")"
+          grep -oE '"(mailer_autoconfirm|disable_signup)":[a-z]+' /tmp/corps || cat /tmp/corps; echo
+          grep -oE '"email":[a-z]+' /tmp/corps || true
+
+          echo "== 3. Tables créées par schema.sql (HTTP 200 attendu) =="
+          for t in equipes participants epreuves scores palmares infos reglages; do
+            echo "$t : HTTP $(appel "$URL/rest/v1/$t?select=*&limit=1" -H "apikey: $CLE") $(head -c 160 /tmp/corps)"
+          done
+
+          echo "== 4. Fonction d'inscription (refus attendu sans compte, pas 404) =="
+          echo "HTTP $(appel -X POST "$URL/rest/v1/rpc/liste_a_rejoindre" -H "apikey: $CLE" -H "Content-Type: application/json" -d '{"p_code":"test"}') $(head -c 200 /tmp/corps)"
+
+          echo "== 5. Site GitHub Pages =="
+          echo "HTTP $(appel -L "https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/")"
