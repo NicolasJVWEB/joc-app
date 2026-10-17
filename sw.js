@@ -1,18 +1,23 @@
 /*
  * Service worker : rend l'app installable et utilisable hors connexion.
  * Stratégie "réseau d'abord" : on prend toujours la version en ligne si possible,
- * sinon la copie en cache. Les données du Google Sheet ne passent pas par ici
+ * sinon la copie en cache. Les données Supabase ne passent pas par ici
  * (elles ont leur propre copie locale, voir js/data.js).
  *
  * Augmenter VERSION quand on ajoute ou renomme un fichier de la liste FICHIERS.
  */
-const VERSION = "joc-v2";
+const VERSION = "joc-v3";
 const FICHIERS = [
   "./",
   "./index.html",
   "./css/style.css",
   "./js/config.js",
+  "./assets/vendor/supabase-2.115.0.js",
   "./js/data.js",
+  "./js/ui.js",
+  "./js/ecrans.js",
+  "./js/compte.js",
+  "./js/orga.js",
   "./js/app.js",
   "./manifest.webmanifest",
   "./assets/logo.png",

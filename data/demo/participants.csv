@@ -1,0 +1,21 @@
+id,prenom,nom,surnom,age,avatar,devise,equipe_id,present,est_admin
+p01,Alex,Démo,Le Boss,34,😎,Organisateur en chef et mauvais perdant.,bleu,oui,oui
+p02,Camille,Démo,La Fusée,29,🚀,Jamais deuxième sans raison.,bleu,oui,non
+p03,Sam,Démo,,31,🦖,,bleu,oui,non
+p04,Lou,Démo,Lulu,27,🦄,,bleu,non,non
+p05,Noé,Démo,,33,🐸,Je suis venu pour la pétanque.,bleu,oui,non
+p06,Jules,Démo,Le Mur,30,🧱,,jaune,oui,non
+p07,Inès,Démo,,28,🌶️,,jaune,oui,non
+p08,Hugo,Démo,Tonton,35,🍺,,jaune,oui,non
+p09,Léna,Démo,,26,🍑,,jaune,non,non
+p10,Tom,Démo,,32,🤠,,jaune,oui,non
+p11,Zoé,Démo,Zozo,29,🐙,,orange,oui,non
+p12,Paul,Démo,,31,🥸,,orange,oui,non
+p13,Mila,Démo,,27,🦩,,orange,oui,non
+p14,Nina,Démo,,30,👑,,orange,oui,non
+p15,Max,Démo,Turbo,33,🔥,,orange,non,non
+p16,Léo,Démo,,28,🦁,,vert,oui,non
+p17,Emma,Démo,,29,🥑,,vert,oui,non
+p18,Yanis,Démo,Le Sage,34,🧙,,vert,oui,non
+p19,Chloé,Démo,,26,🐻,,vert,oui,non
+p20,Rémi,Démo,,30,🦈,,vert,non,non

@@ -1,6 +1,5 @@
-id,nom,couleur,emoji,membres
-eq1,Les Flamants,rouge,🦩,"Capitaine Flam, Rosie, Paco, Lulu"
-eq2,Les Requins,bleu,🦈,"Mako, Jaws, Nemo, Bubulle"
-eq3,Les Cactus,vert,🌵,"Piquant, Sombrero, Tequi, Agave"
-eq4,Les Soleils,jaune,☀️,"Ray, Sunny, Bronzette, Zénith"
-eq5,Les Mouettes,ciel,🕊️,"Plume, Coco, Jojo, Marée"
+id,nom,couleur,emoji,ordre
+bleu,Les Bleus,bleu,💙,1
+jaune,Les Jaunes,jaune,💛,2
+orange,Les Oranges,orange,🧡,3
+vert,Les Verts,vert,💚,4
