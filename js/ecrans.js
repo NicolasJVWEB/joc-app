@@ -39,6 +39,54 @@
       </a>`;
   }
 
+  const TYPES_PROGRAMME = { epreuve: "🎯", repas: "🍽️", moment: "✨" };
+
+  // "2027-07-03" -> "Samedi 3 juillet"
+  function nomJour(jour) {
+    const date = new Date(jour + "T12:00:00");
+    if (isNaN(date)) return jour;
+    const texte = date.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+    return texte.charAt(0).toUpperCase() + texte.slice(1);
+  }
+
+  // Prochain moment du programme (à partir de maintenant)
+  function prochainAuProgramme(d) {
+    const maintenant = new Date();
+    return d.programme.find((l) => new Date(`${l.jour}T${l.heure || "23:59"}:00`) >= maintenant) || null;
+  }
+
+  function ligneProgramme(l, d, prochain, avecLien = true) {
+    const ep = l.epreuveId ? d.epreuves.find((e) => e.id === l.epreuveId) : null;
+    const contenu = `
+      <span class="programme__heure">${esc(l.heure || "")}</span>
+      <span class="programme__pastille programme__pastille--${esc(l.type)}">${ep ? esc(ep.emoji) : TYPES_PROGRAMME[l.type] || "✨"}</span>
+      <span class="ligne__texte"><strong>${esc(l.titre)}</strong>${l.lieu ? `<small>${esc(l.lieu)}</small>` : ""}</span>
+      ${ep ? statut(ep.statut) : ""}`;
+    const classes = `programme__ligne ${prochain ? "programme__ligne--prochain" : ""}`;
+    return ep && avecLien
+      ? `<a class="${classes}" href="#/epreuve/${encodeURIComponent(ep.id)}">${contenu}</a>`
+      : `<div class="${classes}">${contenu}</div>`;
+  }
+
+  E.programme = (d) => {
+    if (!d.programme.length) {
+      return `<h1 class="titre-page">Programme</h1>${vide("Le programme arrive bientôt.")}
+        <a class="bouton bouton--secondaire" href="#/epreuves">Voir les épreuves</a>`;
+    }
+    const prochain = prochainAuProgramme(d);
+    const jours = [...new Set(d.programme.map((l) => l.jour))];
+    return `
+      <h1 class="titre-page">Programme</h1>
+      ${jours.map((jour) => `
+        <h2 class="titre-section">${esc(nomJour(jour))}</h2>
+        <div class="carte programme">
+          ${d.programme.filter((l) => l.jour === jour).map((l) => ligneProgramme(l, d, prochain && prochain.id === l.id)).join("")}
+        </div>`).join("")}
+      <a class="bouton bouton--secondaire" href="#/epreuves">Toutes les épreuves</a>
+      <p class="aide">Les horaires peuvent bouger d'une heure. Les trous, c'est du temps libre : douche, sieste, apéro !</p>
+    `;
+  };
+
   E.accueil = (d) => {
     const { infos, epreuves, classement, participants, moi } = d;
     const enCours = epreuves.filter((e) => e.statut === "en_cours");
@@ -64,6 +112,8 @@
         <div class="compteur__case"><strong>${classement.length}</strong><span>équipes</span></div>
       </div>
 
+      ${prochainAuProgramme(d) ? `<h2 class="titre-section">Prochain au programme</h2>
+        <a class="carte programme" href="#/programme">${ligneProgramme(prochainAuProgramme(d), d, false, false)}</a>` : ""}
       ${enCours.length ? `<h2 class="titre-section">En ce moment</h2>${enCours.map(carteEpreuve).join("")}` : ""}
       ${prochaine ? `<h2 class="titre-section">Prochaine épreuve</h2>${carteEpreuve(prochaine)}` : ""}
 
@@ -96,7 +146,7 @@
 
   E.epreuves = (d) => {
     if (!d.epreuves.length) return `<h1 class="titre-page">Épreuves</h1>${vide("Le programme arrive bientôt.")}`;
-    return `<h1 class="titre-page">Épreuves</h1>${d.epreuves.map(carteEpreuve).join("")}`;
+    return `<a class="retour" href="#/programme">← Programme</a><h1 class="titre-page">Épreuves</h1>${d.epreuves.map(carteEpreuve).join("")}`;
   };
 
   E.epreuve = (d, id) => {

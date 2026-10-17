@@ -1,0 +1,11 @@
+id,rayon,article,quantite,unite,prix_unitaire,achete,note
+1,🥐 Boulangerie,Viennoiseries,120,Unité,1,non,A prendre à la boulangerie
+2,🥐 Boulangerie,Baguettes,30,Unité,1,non,
+3,🧈 Crèmerie,Beurre,1,Kilogramme,12,oui,
+4,🧈 Crèmerie,Oeufs,30,Unité,0.2,oui,
+5,☕ Boissons,Café en grains,2,Kilogramme,17,non,
+6,☕ Boissons,Jus d'orange,18,Litre,2.2,non,
+7,🍎 Fruits et légumes,Bananes,30,Unité,0.4,non,
+8,🍎 Fruits et légumes,Tomates,3.5,Kilogramme,3.2,non,
+9,🥩 Boucherie,Steaks hachés,60,Unité,1.5,non,
+10,🍟 Sauces,Mayonnaise,2,Kilogramme,5,non,

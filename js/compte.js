@@ -149,6 +149,14 @@
         <label>Surnom<input name="surnom" value="${esc(p.surnom)}" maxlength="40" placeholder="La Fusée, Tonton..."></label>
         <label>Âge<input name="age" type="number" inputmode="numeric" min="1" max="120" value="${p.age ?? ""}"></label>
         <label>Ta devise<input name="devise" value="${esc(p.devise)}" maxlength="140" placeholder="Une phrase qui te résume"></label>
+        <fieldset class="bloc-prive">
+          <legend>🔒 Pour les orgas uniquement</legend>
+          <div class="deux-colonnes">
+            <label>T-shirt<select name="taille">${["", "XS", "S", "M", "L", "XL", "XXL", "XXXL"].map((t) => `<option value="${t}" ${t === p.taille ? "selected" : ""}>${t || "-"}</option>`).join("")}</select></label>
+            <label>Arrivée<input name="arrivee" value="${esc(p.arrivee)}" maxlength="60" placeholder="Jeudi soir"></label>
+          </div>
+          <label>Régime alimentaire<input name="regime" value="${esc(p.regime)}" maxlength="200" placeholder="Végé, sans gluten, pas de porc..."></label>
+        </fieldset>
         <fieldset class="avatars">
           <legend>Ton avatar ${p.photo ? "(si pas de photo)" : ""}</legend>
           ${AVATARS.map((a) => `<label><input type="radio" name="avatar" value="${a}" ${a === p.avatar ? "checked" : ""}><span>${a}</span></label>`).join("")}
@@ -167,6 +175,11 @@
       age: age > 0 ? age : null,
       devise: valeurs.devise.trim() || null,
       avatar: valeurs.avatar || "🙂",
+    });
+    await DATA.ecrire.majFiche("fiches_privees", ctx.d.moi.id, {
+      taille_tshirt: valeurs.taille || "",
+      arrivee: valeurs.arrivee.trim(),
+      regime: valeurs.regime.trim(),
     });
     ctx.toast("Profil enregistré !");
     await ctx.rafraichir(true);

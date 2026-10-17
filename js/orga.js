@@ -12,16 +12,36 @@
     .map(([cle, s]) => `<option value="${cle}" ${cle === actuel ? "selected" : ""}>${s.libelle}</option>`).join("");
   const nombreOuNull = (v) => (v === "" || v == null || isNaN(parseFloat(v)) ? null : parseFloat(v));
 
-  E.orga = (d) => `
+  E.orga = (d) => {
+    const taches = d.orga.taches;
+    const courses = d.orga.courses;
+    const s = d.orga.suivi;
+    return `
     <h1 class="titre-page">Espace orga</h1>
+    <h2 class="titre-section">Pendant les jeux</h2>
     <div class="grille">
       <a class="carte tuile tuile--menu" href="#/orga/scores"><span class="tuile__emoji">🏆</span><strong>Résultats</strong><small>Saisir les classements</small></a>
       <a class="carte tuile tuile--menu" href="#/orga/participants"><span class="tuile__emoji">✋</span><strong>Participants</strong><small>${d.participants.filter((p) => p.present).length}/${d.participants.length} présents</small></a>
+      <a class="carte tuile tuile--menu" href="#/orga/programme"><span class="tuile__emoji">📅</span><strong>Programme</strong><small>${d.programme.length} moments</small></a>
       <a class="carte tuile tuile--menu" href="#/orga/epreuves"><span class="tuile__emoji">🎯</span><strong>Épreuves</strong><small>${d.epreuves.length} au programme</small></a>
+    </div>
+    <h2 class="titre-section">Préparation (CAJOC)</h2>
+    <div class="grille">
+      <a class="carte tuile tuile--menu" href="#/orga/taches"><span class="tuile__emoji">✅</span><strong>Tâches</strong><small>${taches.filter((t) => t.fait).length}/${taches.length} faites</small></a>
+      <a class="carte tuile tuile--menu" href="#/orga/courses"><span class="tuile__emoji">🛒</span><strong>Courses</strong><small>${courses.filter((c) => !c.achete).length} à acheter</small></a>
+      <a class="carte tuile tuile--menu" href="#/orga/budget"><span class="tuile__emoji">💶</span><strong>Budget</strong><small>Dépenses et part par personne</small></a>
+      <a class="carte tuile tuile--menu" href="#/orga/paiements"><span class="tuile__emoji">💳</span><strong>Paiements</strong><small>${d.participants.filter((p) => s[p.id] && s[p.id].solde).length}/${d.participants.length} soldes payés</small></a>
+      <a class="carte tuile tuile--menu" href="#/orga/spectateurs"><span class="tuile__emoji">👀</span><strong>Spectateurs</strong><small>${d.orga.spectateurs.length} inscrits</small></a>
+      <a class="carte tuile tuile--menu" href="#/orga/tshirts"><span class="tuile__emoji">👕</span><strong>T-shirts et repas</strong><small>Tailles, régimes, arrivées</small></a>
+      <a class="carte tuile tuile--menu" href="#/orga/niveaux"><span class="tuile__emoji">⚖️</span><strong>Équilibre</strong><small>Niveaux des équipes</small></a>
+    </div>
+    <h2 class="titre-section">Réglages</h2>
+    <div class="grille">
       <a class="carte tuile tuile--menu" href="#/orga/equipes"><span class="tuile__emoji">🎨</span><strong>Équipes</strong><small>Noms et couleurs</small></a>
       <a class="carte tuile tuile--menu" href="#/orga/infos"><span class="tuile__emoji">📣</span><strong>Infos</strong><small>Dates, lieu, annonce</small></a>
     </div>
   `;
+  };
 
   // ---------- Résultats ----------
 
@@ -265,6 +285,7 @@
       <label>Dates<input name="dates" value="${esc(d.infos.dates)}" placeholder="Week-end du 4 juillet"></label>
       <label>Lieu<input name="lieu" value="${esc(d.infos.lieu)}"></label>
       <label>Annonce (affichée en jaune sur l'accueil)<textarea name="annonce" rows="3">${esc(d.infos.annonce)}</textarea></label>
+      <label>Prix d'un repas spectateur (€)<input name="prix_repas_spectateur" type="number" inputmode="decimal" step="any" value="${esc(d.infos.prix_repas_spectateur || "5")}"></label>
       <button class="bouton" type="submit">Enregistrer</button>
     </form>
   `;
@@ -273,6 +294,7 @@
     await DATA.ecrire.majInfos({
       edition: valeurs.edition.trim(), annee: valeurs.annee.trim(), dates: valeurs.dates.trim(),
       lieu: valeurs.lieu.trim(), annonce: valeurs.annonce.trim(),
+      prix_repas_spectateur: valeurs.prix_repas_spectateur.trim() || "5",
     });
     ctx.toast("Infos enregistrées !");
     await ctx.rafraichir(true);

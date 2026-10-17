@@ -7,6 +7,8 @@ La web app officielle des JOC : classement en direct, programme des épreuves et
 - **Ton profil** : photo ou avatar rigolo, surnom, devise, palmarès.
 - **Qui est là ?** : chacun signale sa présence, les orgas voient tout d'un coup d'œil.
 - **En direct** : les orgas saisissent les résultats dans l'app, le classement se met à jour tout seul.
+- **Programme** jour par jour, avec le prochain moment mis en avant.
+- **Gestion CAJOC** (orgas) : tâches du comité, courses, budget, paiements, spectateurs, t-shirts et régimes, équilibre des équipes.
 
 ## Installer l'app sur son téléphone
 
