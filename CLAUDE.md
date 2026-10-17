@@ -71,7 +71,7 @@
 ## Structure
 
 ```
-index.html              Page unique (en-tête, zone d'affichage, barre d'onglets)
+index.html              Page unique (en-tête, zone d'affichage, barre d'onglets ; onglet Orga réservé aux orgas)
 manifest.webmanifest    Fiche d'installation (nom, icônes, couleurs)
 sw.js                   Service worker : hors connexion + installation
 css/style.css           Toute la charte et la mise en page
@@ -100,5 +100,5 @@ docs/supabase.md        Mise en place de Supabase pas à pas
 ## Tester
 
 - En local : `python3 -m http.server` à la racine, puis `http://localhost:8000` (vue mobile du navigateur).
-- Vérifier au minimum : les 5 onglets, une fiche équipe, une fiche épreuve, l'espace orga et ses modules de gestion, aucune erreur dans la console, rendu à 360 px de large.
+- Vérifier au minimum : les 5 onglets (+ onglet ⭐ Orga, visible des seuls orgas), une fiche équipe, une fiche épreuve, l'espace orga et ses modules de gestion, aucune erreur dans la console, rendu à 360 px de large.
 - Parcours connectés : on ne peut pas joindre Supabase depuis l'environnement de Claude ; les tester avec un faux client Supabase injecté dans le navigateur (Playwright) et le SQL sur Postgres local.
