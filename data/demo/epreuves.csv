@@ -1,6 +1,6 @@
 id,ordre,nom,emoji,horaire,lieu,description,statut
-ep1,1,Course en sac,🥔,Samedi 10h30,Pelouse,Relais de 4 sauteurs. Le sac ne doit jamais quitter la taille.,terminee
-ep2,2,Lancer de tong,🩴,Samedi 11h30,Pelouse,Trois essais par joueur. Seul le meilleur lancer de l'équipe compte.,terminee
-ep3,3,Water-polo gonflable,🦄,Samedi 15h,Piscine,Matchs de 8 minutes sur bouées. Tout le monde à l'eau.,en_cours
-ep4,4,Quiz musical,🎵,Samedi 21h,Terrasse,Blind test en 5 manches. Buzzer obligatoire.,a_venir
-ep5,5,Pétanque de la revanche,🎯,Dimanche 11h,Boulodrome,Triplettes en 13 points.,a_venir
+1,1,Course en sac,🥔,Samedi 10h30,Pelouse,Relais de 4 sauteurs. Le sac ne doit jamais quitter la taille.,terminee
+2,2,Lancer de tong,🩴,Samedi 11h30,Pelouse,Trois essais par joueur. Seul le meilleur lancer de l'équipe compte.,terminee
+3,3,Water-polo gonflable,🦄,Samedi 15h,Piscine,Matchs de 8 minutes sur bouées. Tout le monde à l'eau.,en_cours
+4,4,Quiz musical,🎵,Samedi 21h,Terrasse,Blind test en 5 manches. Une réponse par équipe depuis le téléphone.,a_venir
+5,5,Pétanque de la revanche,🎯,Dimanche 11h,Boulodrome,Triplettes en 13 points.,a_venir

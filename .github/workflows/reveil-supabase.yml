@@ -1,0 +1,37 @@
+# Réveil automatique de Supabase
+# L'offre gratuite met le projet en veille après 7 jours sans visite.
+# Ce robot GitHub l'interroge tous les 3 jours pour qu'il reste éveillé, sans rien coûter.
+name: Réveil Supabase
+
+on:
+  schedule:
+    - cron: "17 6 */3 * *" # tous les 3 jours vers 8h (heure de Paris)
+  workflow_dispatch: # bouton "Run workflow" pour le lancer à la main
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  reveil:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ping Supabase
+        run: |
+          URL=$(grep -oP 'supabaseUrl:\s*"\K[^"]*' js/config.js || true)
+          CLE=$(grep -oP 'supabaseCle:\s*"\K[^"]*' js/config.js || true)
+          if [ -z "$URL" ] || [ -z "$CLE" ]; then
+            echo "Supabase n'est pas encore branché (js/config.js), rien à réveiller."
+            exit 0
+          fi
+          curl -fsS "$URL/rest/v1/equipes?select=id&limit=1" -H "apikey: $CLE" -o /dev/null \
+            -w "Supabase a répondu : %{http_code}\n"
+
+      # GitHub coupe les robots planifiés après 60 jours sans activité sur le dépôt :
+      # cette étape le réactive à chaque passage pour qu'il tourne toute l'année.
+      - name: Garder ce réveil actif
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/reveil-supabase.yml/enable"
+        env:
+          GH_TOKEN: ${{ github.token }}

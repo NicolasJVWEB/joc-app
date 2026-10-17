@@ -17,19 +17,24 @@
 
 - **Site statique** hébergé sur **GitHub Pages**, dépôt **public** `guillaumebrisco-alt/joc-app`.
 - **Pas de build, pas de framework, pas de npm** : HTML, CSS et JavaScript simples, servis tels quels. Un fichier modifié = un site à jour. Ne pas introduire d'outil de build sans accord explicite.
-- **Données dans un Google Sheet** que le site lit en direct (onglets publics en lecture). Structure détaillée : `docs/google-sheet.md`.
-  - Lien : `js/config.js` > `sheetId`. Vide = mode démo (fichiers `data/demo/*.csv`).
-  - Lecture via l'URL `gviz/tq?tqx=out:csv&sheet=<onglet>`. Le Sheet doit être partagé "Tous les utilisateurs disposant du lien : lecteur".
-  - Les organisateurs saisissent les scores dans le Sheet ; l'app se met à jour toute seule (toutes les 60 s et à chaque retour sur l'app).
+- **Données dans Supabase** (offre gratuite) : comptes (mail + mot de passe), profils, photos, présences, équipes, épreuves, scores, palmarès. Validé par Guillaume à la place du Google Sheet prévu au départ.
+  - Schéma, sécurité et données de départ : `supabase/schema.sql` (relançable sans perte). Mise en place pas à pas : `docs/supabase.md`.
+  - Branchement : `js/config.js` > `supabaseUrl` et `supabaseCle` (clé anon/publishable, publique par nature). Vides = mode démo (fichiers `data/demo/*.csv`, pas de connexion, rien n'est enregistré).
+  - Accès : il faut un compte **et** le code JOC (`code_acces`) pour voir quoi que ce soit. Le `code_admin` donne les droits orga. Les codes vivent uniquement dans la table `reglages` de Supabase.
+  - Sécurité par règles de ligne (RLS) : lecture réservée aux inscrits, écriture aux orgas, chacun modifie sa propre fiche mais ne peut ni se nommer orga ni changer d'équipe.
+  - Bibliothèque `supabase-js` auto-hébergée dans `assets/vendor/` (version figée dans le nom du fichier).
+  - **Réveil** : `.github/workflows/reveil-supabase.yml` interroge Supabase tous les 3 jours (l'offre gratuite s'endort après 7 jours sans visite) et se réactive lui-même (GitHub coupe les robots planifiés après 60 jours sans activité).
+- L'app se met à jour toute seule (toutes les 60 s et à chaque retour sur l'app), sans redessiner un écran où l'on est en train de saisir.
 
 ## Règles dures
 
-- **Aucune donnée personnelle dans le dépôt** (il est public) : pas de nom de famille, téléphone, mail, adresse, photo de personne, date de naissance. Les données de démo sont fictives.
-- **Le Sheet est lisible par quiconque a son identifiant** (qui est dans le dépôt public) : on n'y met que des prénoms ou surnoms, jamais de coordonnées. Le rappeler à Guillaume si une demande va dans ce sens.
-- Toujours **échapper** le texte qui vient du Sheet avant affichage (fonction `esc()` dans `js/app.js`).
+- **Aucune donnée personnelle dans le dépôt** (il est public) : pas de vrai nom, téléphone, mail, adresse, photo de personne, âge réel. Les données de démo sont fictives. Les vraies données (dont les photos des copains) vont uniquement dans Supabase, derrière la connexion.
+- **Jamais de secret dans le dépôt** : ni codes JOC, ni clé `service_role`/secret, ni mot de passe de base.
+- Toute nouvelle table Supabase : RLS activée et règles écrites dans `supabase/schema.sql`, testées sur un Postgres local avec des comptes simulés (inconnu, copain, orga) avant de pousser.
+- Toujours **échapper** le texte qui vient de la base avant affichage (fonction `esc()` dans `js/ui.js`).
 - **Chemins relatifs uniquement** (`./css/...`, jamais `/css/...`) : le site est servi sous `/joc-app/` sur GitHub Pages.
 - Après ajout ou renommage d'un fichier de l'app : l'ajouter à la liste `FICHIERS` de `sw.js` **et** augmenter `VERSION`.
-- Pas de traceur, pas d'analytics, pas de script tiers. Polices auto-hébergées dans `assets/fonts/`.
+- Pas de traceur, pas d'analytics, pas de script chargé depuis un autre site : polices dans `assets/fonts/`, bibliothèques dans `assets/vendor/`.
 - `robots: noindex` : l'app n'a pas vocation à apparaître dans Google.
 
 ## Rédaction
@@ -47,6 +52,8 @@
 | Bleu ciel | `--joc-ciel` | `#1ea6d8` |
 | Bleu | `--joc-bleu` | `#0b6cc0` |
 | Jaune / or | `--joc-jaune` | `#f8b803` |
+| Orange (équipe orange) | `--joc-orange` | `#ff8a1f` |
+| Violet (foulards équipe orange) | `--joc-violet` | `#7b3fa0` |
 | Crème (lettres du logo, fond) | `--joc-creme` | `#fffbea` |
 | Encre (contours) | `--joc-encre` | `#1b1533` |
 
@@ -54,7 +61,7 @@
 - **Texte** : Nunito.
 - **Effet "autocollant"** : contour encre 3 px, coins arrondis, ombre dure décalée de 4 px sans flou. Les éléments cliquables "s'enfoncent" au toucher.
 - **Motif signature** : les 5 rayures diagonales du logo (vert, rouge, ciel, bleu, jaune), en bandeau sous l'en-tête et devant les titres de section.
-- Couleurs d'équipe : un des 5 noms ci-dessus (ou un code `#hex`) dans la colonne `couleur` du Sheet.
+- Couleurs d'équipe : un des noms ci-dessus (vert, rouge, ciel, bleu, jaune, orange, violet) ou un code `#hex`. Les 4 équipes 2026 : bleu, jaune, orange (foulards violets), vert.
 
 ## Structure
 
@@ -63,17 +70,28 @@ index.html              Page unique (en-tête, zone d'affichage, barre d'onglets
 manifest.webmanifest    Fiche d'installation (nom, icônes, couleurs)
 sw.js                   Service worker : hors connexion + installation
 css/style.css           Toute la charte et la mise en page
-js/config.js            Réglages : identifiant du Sheet, onglets, barème
-js/data.js              Lecture du Sheet (CSV), calcul du classement, copie locale
-js/app.js               Écrans et navigation (#/, #/classement, #/epreuves, #/equipes...)
-assets/logo.png         Logo JOC
-assets/icons/           Icônes d'app (192, 512, maskable, Apple, favicon)
-assets/fonts/           Polices Lilita One et Nunito (licence SIL OFL)
-data/demo/*.csv         Données fictives du mode démo (même format que le Sheet)
-docs/google-sheet.md    Mode d'emploi du Google Sheet
+js/config.js            Réglages : adresse et clé Supabase, barème
+js/data.js              Lecture/écriture Supabase (ou démo), calcul du classement, copie locale
+js/ui.js                Outils d'affichage partagés (esc, couleurs, portraits, messages)
+js/ecrans.js            Écrans de consultation (accueil, classement, épreuves, équipes, présents, fiches)
+js/compte.js            Connexion, inscription avec le code, profil
+js/orga.js              Espace orga (résultats, épreuves, participants, équipes, infos)
+js/app.js               Navigation, connexion, rafraîchissement, actions
+assets/vendor/          supabase-js auto-hébergé
+supabase/schema.sql     Base de données, sécurité, données de départ
+.github/workflows/      Réveil automatique de Supabase
+data/demo/*.csv         Données fictives du mode démo
+docs/supabase.md        Mise en place de Supabase pas à pas
 ```
+
+## Feuille de route
+
+- Quiz en direct : questions sur grand écran, **une réponse par équipe** depuis les téléphones (décision de Guillaume, à affiner).
+- Noms des 4 équipes 2026 et liste des participants : à fournir par Guillaume (à saisir dans l'espace orga, pas dans le dépôt).
+- Simulation avec les résultats de l'édition précédente.
 
 ## Tester
 
 - En local : `python3 -m http.server` à la racine, puis `http://localhost:8000` (vue mobile du navigateur).
-- Vérifier au minimum : les 4 onglets, une fiche équipe, une fiche épreuve, aucune erreur dans la console, rendu à 360 px de large.
+- Vérifier au minimum : les 5 onglets, une fiche équipe, une fiche épreuve, l'espace orga, aucune erreur dans la console, rendu à 360 px de large.
+- Parcours connectés : on ne peut pas joindre Supabase depuis l'environnement de Claude ; les tester avec un faux client Supabase injecté dans le navigateur (Playwright) et le SQL sur Postgres local.
