@@ -1,0 +1,3 @@
+# Fichiers d'import avec des données personnelles : ne jamais les publier
+import-*.sql
+*.prive.sql

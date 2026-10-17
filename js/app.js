@@ -18,8 +18,9 @@
 
   // Écrans avec formulaire : le rafraîchissement automatique ne les redessine pas
   const FORMULAIRES = ["connexion", "rejoindre", "nouveau-mdp", "moi/modifier", "orga/scores", "orga/epreuve",
-    "orga/participant", "orga/equipes", "orga/infos"];
-  const ONGLET_ACTIF = { epreuve: "epreuves", equipe: "equipes", presents: "equipes", participant: "equipes" };
+    "orga/participant", "orga/equipes", "orga/infos", "orga/modifier", "orga/courses", "orga/taches",
+    "orga/budget", "orga/spectateurs", "orga/paiements", "orga/niveaux", "orga/programme"];
+  const ONGLET_ACTIF = { epreuve: "programme", epreuves: "programme", equipe: "equipes", presents: "equipes", participant: "equipes" };
 
   // "#/orga/scores/12" -> { cle: "orga/scores", param: "12" }
   function lireAdresse() {

@@ -49,15 +49,20 @@
       if (!r.ok) throw new Error(`Fichier de démo ${nom} introuvable`);
       return lireCSV(await r.text());
     };
-    const [infos, equipes, epreuves, scores, participants, palmares] = await Promise.all(
-      ["infos", "equipes", "epreuves", "scores", "participants", "palmares"].map(lire)
-    );
-    participants.forEach((p) => {
-      p.present = p.present === "oui";
-      p.est_admin = p.est_admin === "oui";
-    });
-    // En démo, "moi" = le premier participant
-    return { infos, equipes, epreuves, scores, participants, palmares, photos: {}, moiId: participants[0]?.id || null };
+    const noms = ["infos", "equipes", "epreuves", "scores", "participants", "palmares", "programme",
+      "fiches_privees", "suivi_orga", "taches", "courses", "depenses", "spectateurs"];
+    const t = Object.fromEntries(noms.map((n, i) => [n, null]));
+    (await Promise.all(noms.map(lire))).forEach((lignes, i) => { t[noms[i]] = lignes; });
+    // Les CSV ne connaissent que du texte : on remet les oui/non et les listes
+    const oui = (v) => v === "oui";
+    t.participants.forEach((p) => { p.present = oui(p.present); p.est_admin = oui(p.est_admin); });
+    t.suivi_orga.forEach((l) => { l.acompte_paye = oui(l.acompte_paye); l.solde_paye = oui(l.solde_paye); });
+    t.taches.forEach((l) => { l.fait = oui(l.fait); });
+    t.courses.forEach((l) => { l.achete = oui(l.achete); });
+    t.depenses.forEach((l) => { l.rembourse = oui(l.rembourse); });
+    t.spectateurs.forEach((l) => { l.paye = oui(l.paye); l.repas = l.repas ? l.repas.split(" ") : []; });
+    // En démo, "moi" = le premier participant (orga)
+    return { ...t, photos: {}, moiId: t.participants[0]?.id || null };
   }
 
   // ---------- Supabase ----------
@@ -73,10 +78,18 @@
   async function chargerSupabase() {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) return null;
-    const [infos, equipes, epreuves, scores, participants, palmares] = await Promise.all([
+    const [infos, equipes, epreuves, scores, participants, palmares, programme, fiches_privees] = await Promise.all([
       lireTable("infos"), lireTable("equipes", "ordre"), lireTable("epreuves", "ordre"),
       lireTable("scores"), lireTable("participants", "prenom"), lireTable("palmares", "annee"),
+      lireTable("programme"), lireTable("fiches_privees"),
     ]);
+    // Tables de gestion : seulement pour les orgas (les autres n'y ont pas accès)
+    const moiLigne = participants.find((p) => p.compte_id === session.user.id);
+    const orga = { suivi_orga: [], taches: [], courses: [], depenses: [], spectateurs: [] };
+    if (moiLigne && moiLigne.est_admin) {
+      const tables = Object.keys(orga);
+      (await Promise.all(tables.map((t) => lireTable(t)))).forEach((lignes, i) => { orga[tables[i]] = lignes; });
+    }
     // Liens temporaires vers les photos (le dossier photos est privé)
     const chemins = participants.map((p) => p.photo).filter(Boolean);
     const photos = {};
@@ -84,8 +97,8 @@
       const { data } = await sb.storage.from("photos").createSignedUrls(chemins, DUREE_PHOTO);
       (data || []).forEach((d) => { if (d.signedUrl) photos[d.path] = d.signedUrl; });
     }
-    const moi = participants.find((p) => p.compte_id === session.user.id);
-    return { infos, equipes, epreuves, scores, participants, palmares, photos, moiId: moi ? moi.id : null };
+    return { infos, equipes, epreuves, scores, participants, palmares, programme, fiches_privees, ...orga,
+      photos, moiId: moiLigne ? moiLigne.id : null };
   }
 
   // ---------- Modèle prêt à afficher ----------
@@ -164,8 +177,52 @@
       eq.place = i > 0 && eq.total === classement[i - 1].total ? classement[i - 1].place : i + 1;
     });
 
+    const nombre = (v) => (v === "" || v == null || isNaN(parseFloat(v)) ? null : parseFloat(v));
+    const parParticipant = (lignes) => Object.fromEntries((lignes || []).map((l) => [String(l.participant_id), l]));
+
+    // Programme trié par jour puis heure ("" = sans heure, en tête de journée)
+    const programme = (brut.programme || []).map((l) => ({
+      id: String(l.id),
+      jour: l.jour || "",
+      heure: (l.heure || "").slice(0, 5),
+      titre: l.titre || "",
+      type: l.type || "moment",
+      lieu: l.lieu || "",
+      epreuveId: l.epreuve_id ? String(l.epreuve_id) : "",
+    })).sort((a, b) => (a.jour + a.heure).localeCompare(b.jour + b.heure));
+
+    const fiches = parParticipant(brut.fiches_privees);
+    participants.forEach((p) => {
+      const f = fiches[p.id] || {};
+      p.taille = f.taille_tshirt || "";
+      p.regime = f.regime || "";
+      p.arrivee = f.arrivee || "";
+    });
+
+    // Gestion (vide pour les non-orgas)
+    const suivi = parParticipant(brut.suivi_orga);
+    const orga = {
+      suivi: Object.fromEntries(participants.map((p) => {
+        const l = suivi[p.id] || {};
+        return [p.id, {
+          acompte: !!l.acompte_paye, solde: !!l.solde_paye, resteDu: nombre(l.reste_du) || 0,
+          sport: nombre(l.niveau_sport), culture: nombre(l.niveau_culture), note: l.note || "",
+        }];
+      })),
+      taches: (brut.taches || []).map((l) => ({ id: String(l.id), pole: l.pole || "", titre: l.titre || "",
+        responsable: l.responsable || "", fait: !!l.fait, ordre: nombre(l.ordre) || 0 }))
+        .sort((a, b) => a.pole.localeCompare(b.pole) || a.ordre - b.ordre),
+      courses: (brut.courses || []).map((l) => ({ id: String(l.id), rayon: l.rayon || "", article: l.article || "",
+        quantite: nombre(l.quantite) ?? 0, unite: l.unite || "", prix: nombre(l.prix_unitaire) ?? 0,
+        achete: !!l.achete, note: l.note || "" })),
+      depenses: (brut.depenses || []).map((l) => ({ id: String(l.id), libelle: l.libelle || "", categorie: l.categorie || "",
+        montant: nombre(l.montant) ?? 0, avancePar: l.avance_par || "", rembourse: !!l.rembourse })),
+      spectateurs: (brut.spectateurs || []).map((l) => ({ id: String(l.id), nom: l.nom || "",
+        repas: (l.repas || []).map(String), montant: nombre(l.montant) ?? 0, paye: !!l.paye })),
+    };
+
     const moi = participants.find((p) => p.id === String(brut.moiId)) || null;
-    return { infos, equipes, epreuves, scores, classement, participants, moi };
+    return { infos, equipes, epreuves, scores, classement, participants, programme, orga, moi };
   }
 
   async function charger() {
@@ -332,6 +389,20 @@
     async ajouterPalmares(participantId, annee, titre) {
       demoInterdit();
       verifier(await sb.from("palmares").insert({ participant_id: participantId, annee, titre }));
+    },
+    // Écritures génériques pour les tables de gestion
+    async enregistrerLigne(table, champs, id) {
+      demoInterdit();
+      verifier(id ? await sb.from(table).update(champs).eq("id", id) : await sb.from(table).insert(champs));
+    },
+    async supprimerLigne(table, id) {
+      demoInterdit();
+      verifier(await sb.from(table).delete().eq("id", id));
+    },
+    // Tables liées à un participant (fiches_privees, suivi_orga) : crée ou met à jour
+    async majFiche(table, participantId, champs) {
+      demoInterdit();
+      verifier(await sb.from(table).upsert({ participant_id: participantId, ...champs }, { onConflict: "participant_id" }));
     },
     async supprimerPalmares(id) {
       demoInterdit();

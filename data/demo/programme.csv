@@ -1,0 +1,15 @@
+id,jour,heure,titre,type,lieu,epreuve_id
+1,2027-07-02,19:00,Arrivée des participants,moment,Villa,
+2,2027-07-02,20:30,Repas 1 · Barbecue,repas,Terrasse,
+3,2027-07-02,22:00,Cérémonie d'ouverture,moment,Terrasse,
+4,2027-07-03,08:30,Petit déjeuner,repas,Cuisine,
+5,2027-07-03,09:30,Annonce des équipes,moment,Pelouse,
+6,2027-07-03,10:30,Course en sac,epreuve,Pelouse,1
+7,2027-07-03,11:30,Lancer de tong,epreuve,Pelouse,2
+8,2027-07-03,12:30,Repas 2 · Bar à salades,repas,Terrasse,
+9,2027-07-03,15:00,Water-polo gonflable,epreuve,Piscine,3
+10,2027-07-03,20:30,Repas 3 · Bar à burgers,repas,Terrasse,
+11,2027-07-03,21:30,Quiz musical,epreuve,Terrasse,4
+12,2027-07-04,09:30,Petit déjeuner,repas,Cuisine,
+13,2027-07-04,11:00,Pétanque de la revanche,epreuve,Boulodrome,5
+14,2027-07-04,12:00,Cérémonie de clôture et podium,moment,Pelouse,

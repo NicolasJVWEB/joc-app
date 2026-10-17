@@ -1,0 +1,21 @@
+participant_id,taille_tshirt,regime,arrivee
+p01,L,,Jeudi soir
+p02,S,Végétarien,Vendredi 15h
+p03,M,,Jeudi soir
+p04,M,Sans lactose,Vendredi 18h
+p05,XL,,Jeudi soir
+p06,L,,Vendredi 15h
+p07,S,Sans gluten,Jeudi soir
+p08,XXL,,Vendredi 12h
+p09,M,,Vendredi 15h
+p10,L,Pas de porc,Jeudi soir
+p11,S,,Vendredi 15h
+p12,M,,Jeudi soir
+p13,S,Sans poisson,Vendredi 18h
+p14,M,,Jeudi soir
+p15,L,,Vendredi 15h
+p16,L,,Jeudi soir
+p17,S,Végétarien,Vendredi 15h
+p18,M,,Jeudi soir
+p19,M,,Vendredi 12h
+p20,XL,,Vendredi 18h

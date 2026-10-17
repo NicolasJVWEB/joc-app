@@ -48,6 +48,17 @@ Supabase est le service gratuit qui stocke les comptes, les profils, les photos,
 3. Dans **Moi** > **Espace orga** > **Participants** : ajouter la liste des copains avec leur équipe.
 4. Donner aux copains le lien de l'app et le **code copains**. Chacun crée son compte, retrouve son prénom dans la liste et complète son profil.
 
+## Mettre à jour la base après une évolution de l'app
+
+Quand Claude ajoute des fonctions (par exemple la partie gestion), il faut relancer le script :
+SQL Editor > nouvelle requête > coller la dernière version de [`supabase/schema.sql`](../supabase/schema.sql) > **Run**.
+Aucune donnée n'est effacée et **les codes déjà en place ne sont pas touchés** : pas besoin de les retaper.
+
+## Importer les données du Drive (une seule fois)
+
+Claude peut préparer un fichier `import-joc-2026.sql` avec les listes du dossier Drive « Gestion » (participants, programme, tâches, courses, budget, spectateurs). Ce fichier contient des données personnelles : il ne va **jamais** sur GitHub.
+SQL Editor > nouvelle requête > coller son contenu > **Run**. S'il a déjà été lancé, il s'arrête sans rien modifier.
+
 ## Réveil automatique
 
 L'offre gratuite met le projet en veille après 7 jours sans visite. Un robot GitHub (`.github/workflows/reveil-supabase.yml`) l'interroge tous les 3 jours pour le garder éveillé. Rien à faire de ton côté. Pour vérifier qu'il tourne : onglet **Actions** du dépôt GitHub, ligne **Réveil Supabase**.

@@ -29,7 +29,7 @@ jobs:
           grep -oE '"email":[a-z]+' /tmp/corps || true
 
           echo "== 3. Tables créées par schema.sql (HTTP 200 attendu) =="
-          for t in equipes participants epreuves scores palmares infos reglages; do
+          for t in equipes participants epreuves scores palmares infos reglages programme fiches_privees suivi_orga taches courses depenses spectateurs; do
             echo "$t : HTTP $(appel "$URL/rest/v1/$t?select=*&limit=1" -H "apikey: $CLE") $(head -c 160 /tmp/corps)"
           done
 

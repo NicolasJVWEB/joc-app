@@ -24,11 +24,14 @@
   - Sécurité par règles de ligne (RLS) : lecture réservée aux inscrits, écriture aux orgas, chacun modifie sa propre fiche mais ne peut ni se nommer orga ni changer d'équipe.
   - Bibliothèque `supabase-js` auto-hébergée dans `assets/vendor/` (version figée dans le nom du fichier).
   - **Réveil** : `.github/workflows/reveil-supabase.yml` interroge Supabase tous les 3 jours (l'offre gratuite s'endort après 7 jours sans visite) et se réactive lui-même (GitHub coupe les robots planifiés après 60 jours sans activité).
+- **Gestion de l'événement** (remplace le dossier Drive « Gestion » du CAJOC) : programme jour par jour (visible par tous), et pour les orgas uniquement : tâches du comité, courses, budget, paiements, spectateurs, récap t-shirts / régimes / arrivées, équilibre des équipes (niveaux sport et culture).
+  - Infos perso utiles à l'orga (taille de t-shirt, régime, arrivée) : table `fiches_privees`, lisible par la personne et les orgas seulement. Paiements et niveaux : table `suivi_orga`, orgas seulement.
 - L'app se met à jour toute seule (toutes les 60 s et à chaque retour sur l'app), sans redessiner un écran où l'on est en train de saisir.
 
 ## Règles dures
 
 - **Aucune donnée personnelle dans le dépôt** (il est public) : pas de vrai nom, téléphone, mail, adresse, photo de personne, âge réel. Les données de démo sont fictives. Les vraies données (dont les photos des copains) vont uniquement dans Supabase, derrière la connexion.
+- **Import de vraies données** (listes Drive) : un fichier SQL généré hors du dépôt (scratchpad), remis à Guillaume pour le coller dans Supabase. Jamais commité (`.gitignore` bloque `import-*.sql`).
 - **Jamais de secret dans le dépôt** : ni codes JOC, ni clé `service_role`/secret, ni mot de passe de base.
 - Toute nouvelle table Supabase : RLS activée et règles écrites dans `supabase/schema.sql`, testées sur un Postgres local avec des comptes simulés (inconnu, copain, orga) avant de pousser.
 - Toujours **échapper** le texte qui vient de la base avant affichage (fonction `esc()` dans `js/ui.js`).
@@ -75,7 +78,8 @@ js/data.js              Lecture/écriture Supabase (ou démo), calcul du classem
 js/ui.js                Outils d'affichage partagés (esc, couleurs, portraits, messages)
 js/ecrans.js            Écrans de consultation (accueil, classement, épreuves, équipes, présents, fiches)
 js/compte.js            Connexion, inscription avec le code, profil
-js/orga.js              Espace orga (résultats, épreuves, participants, équipes, infos)
+js/orga.js              Espace orga (menu, résultats, épreuves, participants, équipes, infos)
+js/gestion.js           Gestion CAJOC (programme, tâches, courses, budget, paiements, spectateurs, t-shirts, niveaux)
 js/app.js               Navigation, connexion, rafraîchissement, actions
 assets/vendor/          supabase-js auto-hébergé
 supabase/schema.sql     Base de données, sécurité, données de départ
@@ -87,11 +91,12 @@ docs/supabase.md        Mise en place de Supabase pas à pas
 ## Feuille de route
 
 - Quiz en direct : questions sur grand écran, **une réponse par équipe** depuis les téléphones (décision de Guillaume, à affiner).
-- Noms des 4 équipes 2026 et liste des participants : à fournir par Guillaume (à saisir dans l'espace orga, pas dans le dépôt).
-- Simulation avec les résultats de l'édition précédente.
+- Noms des 4 équipes et correspondance numéro d'équipe (feuille « Nouvelles équipes ») -> couleur : à confirmer par Guillaume.
+- Résultats de l'édition 2026 pour le palmarès et la simulation.
+- Suggestion automatique d'équipes équilibrées à partir des niveaux.
 
 ## Tester
 
 - En local : `python3 -m http.server` à la racine, puis `http://localhost:8000` (vue mobile du navigateur).
-- Vérifier au minimum : les 5 onglets, une fiche équipe, une fiche épreuve, l'espace orga, aucune erreur dans la console, rendu à 360 px de large.
+- Vérifier au minimum : les 5 onglets, une fiche équipe, une fiche épreuve, l'espace orga et ses modules de gestion, aucune erreur dans la console, rendu à 360 px de large.
 - Parcours connectés : on ne peut pas joindre Supabase depuis l'environnement de Claude ; les tester avec un faux client Supabase injecté dans le navigateur (Playwright) et le SQL sur Postgres local.

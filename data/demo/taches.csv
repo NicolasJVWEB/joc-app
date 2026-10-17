@@ -1,0 +1,12 @@
+id,pole,titre,responsable,fait,ordre
+1,🍔 Nourriture et boissons,Courses alimentaires,Alex,oui,1
+2,🍔 Nourriture et boissons,Courses boissons,Alex,non,2
+3,🍔 Nourriture et boissons,Rotations repas,Inès,non,3
+4,🎯 Épreuves,Création des épreuves (sport · culture · intello),Camille,oui,1
+5,🎯 Épreuves,Matériel des épreuves,Camille,non,2
+6,📣 Com,Carton d'invitation,Hugo,oui,1
+7,📣 Com,Photos et vidéos,Hugo,non,2
+8,📣 Com,Tee-shirts et eco cups,Hugo,non,3
+9,🏠 Logement,Réservation de la villa,Zoé,oui,1
+10,🔊 Matériel,Tables et chaises,Jules,non,1
+11,🔊 Matériel,Enceinte et sono,Jules,non,2
