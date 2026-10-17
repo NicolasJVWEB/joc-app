@@ -39,6 +39,7 @@
     <div class="grille">
       <a class="carte tuile tuile--menu" href="#/orga/equipes"><span class="tuile__emoji">🎨</span><strong>Équipes</strong><small>Noms et couleurs</small></a>
       <a class="carte tuile tuile--menu" href="#/orga/infos"><span class="tuile__emoji">📣</span><strong>Infos</strong><small>Dates, lieu, annonce</small></a>
+      <a class="carte tuile tuile--menu" href="#/orga/edition"><span class="tuile__emoji">🎆</span><strong>Nouvelle édition</strong><small>Passer à l'année suivante</small></a>
     </div>
   `;
   };
@@ -206,7 +207,7 @@
         <h1 class="titre-page">${esc(nomAffiche(p))}</h1>
         <p class="fiche__meta">${p.compteId ? "Compte créé" : "Pas encore de compte"}</p>
       </div>
-      <h2 class="titre-section">Palmarès</h2>
+      <h2 class="titre-section">Historique et palmarès</h2>
       ${p.palmares.length ? `<ul class="palmares">${p.palmares.map((l) => `
         <li><span>${esc(l.annee)}</span>${esc(l.titre)}<button class="lien lien--danger" data-action="supprimer-palmares" data-id="${esc(l.id)}" aria-label="Supprimer">✕</button></li>`).join("")}</ul>` : ""}
       <form class="carte formulaire" data-form="ajout-palmares" data-id="${esc(p.id)}">

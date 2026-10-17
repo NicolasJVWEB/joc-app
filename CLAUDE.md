@@ -2,7 +2,7 @@
 
 ## Contexte
 
-- **JOC = Jeux Olympiques des Copaings** (orthographe "Copaings" voulue, ne pas corriger) : un week-end de jeux par équipes entre une quarantaine d'amis, organisé chaque année. 3e édition en 2026.
+- **JOC = Jeux Olympiques des Copaings** (orthographe "Copaings" voulue, ne pas corriger) : un week-end de jeux par équipes entre une quarantaine d'amis, organisé chaque année. 3e édition en juillet 2026 (passée, données importées comme historique). **Édition en préparation : 4e édition, du vendredi 18 au dimanche 20 juin 2027.**
 - Projet perso de Guillaume, **sans aucun rapport avec Hélia** : les règles métier Hélia (toile, Serge Ferrari, HubSpot, Drive Affaires...) ne s'appliquent pas ici.
 - **Guillaume ne code pas.** Explique chaque changement en langage simple, sans jargon, et dis-lui concrètement quoi faire de son côté (cliquer où, remplir quoi).
 
@@ -26,6 +26,8 @@
   - **Réveil** : `.github/workflows/reveil-supabase.yml` interroge Supabase tous les 3 jours (l'offre gratuite s'endort après 7 jours sans visite) et se réactive lui-même (GitHub coupe les robots planifiés après 60 jours sans activité).
 - **Gestion de l'événement** (remplace le dossier Drive « Gestion » du CAJOC) : programme jour par jour (visible par tous), et pour les orgas uniquement : tâches du comité, courses, budget, paiements, spectateurs, récap t-shirts / régimes / arrivées, équilibre des équipes (niveaux sport et culture).
   - Infos perso utiles à l'orga (taille de t-shirt, régime, arrivée) : table `fiches_privees`, lisible par la personne et les orgas seulement. Paiements et niveaux : table `suivi_orga`, orgas seulement.
+- **Éditions** : l'app gère une édition à la fois (infos `edition`, `annee`, `dates`). Espace orga > « Nouvelle édition » archive l'édition en cours dans l'historique de chacun (lignes `palmares` « Équipe … » ou « Participant·e »), garde participants, tâches et courses (décochées) et le programme type recalé sur les nouvelles dates (mêmes jours de la semaine), et remet à zéro épreuves, scores, équipes, présences, paiements, dépenses et spectateurs. Écran « La légende des JOC » (`#/historique`) : toutes les éditions passées.
+- **Inscription** : « Déjà venu·e aux JOC ? » (on retrouve son prénom, avec recherche) ou « Première fois aux JOC ? » (on crée son profil).
 - L'app se met à jour toute seule (toutes les 60 s et à chaque retour sur l'app), sans redessiner un écran où l'on est en train de saisir.
 
 ## Règles dures
@@ -92,7 +94,7 @@ docs/supabase.md        Mise en place de Supabase pas à pas
 
 - Quiz en direct : questions sur grand écran, **une réponse par équipe** depuis les téléphones (décision de Guillaume, à affiner).
 - Noms des 4 équipes et correspondance numéro d'équipe (feuille « Nouvelles équipes ») -> couleur : à confirmer par Guillaume.
-- Résultats de l'édition 2026 pour le palmarès et la simulation.
+- Podium et titres de l'édition 2026 à ajouter dans l'historique (à fournir par Guillaume).
 - Suggestion automatique d'équipes équilibrées à partir des niveaux.
 
 ## Tester

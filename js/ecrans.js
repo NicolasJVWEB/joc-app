@@ -120,6 +120,34 @@
       <h2 class="titre-section">Top 3</h2>
       ${classement.length ? classement.slice(0, 3).map(ligneClassement).join("") : vide("Aucune équipe pour l'instant.")}
       <a class="bouton" href="#/classement">Voir tout le classement</a>
+      <a class="bouton bouton--secondaire" href="#/historique">🏛️ La légende des JOC</a>
+    `;
+  };
+
+  // Historique de toutes les éditions, à partir des lignes d'historique (palmarès) de chacun
+  E.historique = (d) => {
+    const lignes = d.participants.flatMap((p) => p.palmares.map((l) => ({ ...l, p })));
+    const annees = [...new Set(lignes.map((l) => l.annee))].sort((a, b) => b - a);
+    return `
+      <a class="retour" href="#/">← Accueil</a>
+      <h1 class="titre-page">La légende des JOC</h1>
+      ${annees.length ? annees.map((annee) => {
+        const deLAnnee = lignes.filter((l) => l.annee === annee);
+        const joueurs = new Set(deLAnnee.map((l) => l.p.id)).size;
+        const titres = deLAnnee.filter((l) => !/^(Équipe|Participant)/.test(l.titre));
+        const parEquipe = {};
+        deLAnnee.filter((l) => /^(Équipe|Participant)/.test(l.titre)).forEach((l) => {
+          const groupe = /^Équipe/.test(l.titre) ? l.titre : "Équipe 🎉 Les autres copaings";
+          (parEquipe[groupe] = parEquipe[groupe] || []).push(l.p);
+        });
+        return `
+          <h2 class="titre-section">JOC ${esc(annee)} <small class="sous-total">${joueurs} copaings</small></h2>
+          ${titres.length ? `<ul class="palmares">${titres.map((l) => `<li><span>🏅</span>${esc(l.p.surnom || l.p.prenom)} · ${esc(l.titre)}</li>`).join("")}</ul>` : ""}
+          ${Object.entries(parEquipe).map(([titre, membres]) => `
+            <details class="carte details"><summary><strong>${esc(titre.replace(/^Équipe /, ""))}</strong> · ${membres.length}</summary>
+              <p>${membres.map((m) => `<a href="#/participant/${encodeURIComponent(m.id)}">${esc(m.surnom || m.prenom)}</a>`).join(" · ")}</p>
+            </details>`).join("")}`;
+      }).join("") : vide("L'histoire s'écrit cette année !")}
     `;
   };
 
@@ -256,8 +284,8 @@
         ${p.devise ? `<p class="fiche__devise">${esc(p.devise)}</p>` : ""}
         ${p.estAdmin ? `<p class="badge-orga">⭐ Orga</p>` : ""}
       </div>
-      <h2 class="titre-section">Palmarès</h2>
-      ${p.palmares.length ? `<ul class="palmares">${p.palmares.map((l) => `<li><span>${esc(l.annee)}</span>${esc(l.titre)}</li>`).join("")}</ul>` : vide("Palmarès encore vierge. Ça va changer !")}
+      <h2 class="titre-section">Historique</h2>
+      ${p.palmares.length ? `<ul class="palmares">${p.palmares.map((l) => `<li><span>${esc(l.annee)}</span>${esc(l.titre)}</li>`).join("")}</ul>` : vide("Première édition ? La légende commence maintenant !")}
     `;
   };
 })();
