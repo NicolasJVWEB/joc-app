@@ -257,7 +257,8 @@
     if (/Password should be at least/i.test(m)) return "Le mot de passe doit faire au moins 6 caractères.";
     if (/Unable to validate email|invalid email/i.test(m)) return "Adresse mail invalide.";
     if (/Email not confirmed/i.test(m)) return "Mail pas encore confirmé : clique sur le lien reçu par mail.";
-    if (/rate limit/i.test(m)) return "Trop de tentatives, réessaie dans quelques minutes.";
+    if (/rate limit|security purposes/i.test(m)) return "Trop de demandes d'un coup : attends une minute puis réessaie.";
+    if (/same.*password|different from the old/i.test(m)) return "Choisis un mot de passe différent de l'ancien.";
     if (/row-level security/i.test(m)) return "Tu n'as pas les droits pour faire ça.";
     if (/Failed to fetch|NetworkError/i.test(m)) return "Pas de connexion internet.";
     return m || "Une erreur est survenue.";
@@ -293,6 +294,13 @@
     async motDePasseOublie(email) {
       demoInterdit();
       verifier(await sb.auth.resetPasswordForEmail(email, { redirectTo: urlSite() }));
+    },
+    // Code à 6 chiffres reçu par mail : il connecte la personne, puis on change le mot de passe
+    async recupererAvecCode(email, code, mdp) {
+      demoInterdit();
+      const r = await sb.auth.verifyOtp({ email, token: code, type: "recovery" });
+      if (r.error) throw new Error("Code incorrect ou expiré. Demande un nouveau code.");
+      verifier(await sb.auth.updateUser({ password: mdp }));
     },
     async changerMotDePasse(mdp) {
       demoInterdit();

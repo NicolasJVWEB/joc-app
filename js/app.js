@@ -150,6 +150,13 @@
     }
   });
 
+  // Lien du mail ouvert dans un autre navigateur, ou expiré : on l'explique au lieu de ne rien faire
+  const erreurLien = new URLSearchParams(location.search + "&" + location.hash.replace(/^#/, "")).get("error_description");
+  if (erreurLien) {
+    history.replaceState(null, "", location.pathname);
+    setTimeout(() => toast("Ce lien ne marche pas ici. Utilise plutôt « Mot de passe oublié » et le code reçu par mail.", "alerte"), 600);
+  }
+
   // Premier affichage : la copie locale tout de suite (si connecté), puis les données fraîches.
   (async () => {
     if (!DATA.estDemo) connecte = !!(await DATA.auth.session());
