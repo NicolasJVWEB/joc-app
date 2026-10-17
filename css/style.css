@@ -481,6 +481,12 @@ a.programme__ligne:active { background: var(--joc-creme); }
 .separateur { display: flex; align-items: center; gap: 10px; color: var(--texte-doux); font-size: 13px; font-weight: 800; margin: 10px 0 14px; }
 .separateur::before, .separateur::after { content: ""; flex: 1; border-top: 2px dashed #d8d4c4; }
 
+.liste-explication { margin: 8px 0 0; padding-left: 4px; list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 15px; }
+.filtre-noms { width: 100%; font: inherit; font-weight: 700; font-size: 16px; padding: 12px 14px; margin-bottom: 12px; border: var(--trait); border-radius: 999px; background: #fff; }
+.choix-nom[hidden] { display: none; }
+.details a { color: var(--joc-bleu); font-weight: 800; }
+.avertissement { background: color-mix(in srgb, var(--joc-rouge) 12%, white); border-color: var(--joc-rouge); }
+
 /* Message flottant */
 .toast {
   position: fixed; left: 16px; right: 16px; bottom: calc(var(--hauteur-nav) + env(safe-area-inset-bottom) + 14px);

@@ -135,18 +135,29 @@
     }
     return `
       <h1 class="titre-page">C'est qui ?</h1>
-      <p class="aide">Trouve ton prénom dans la liste des participants.</p>
-      ${etat.liste.length ? `<div class="choix-noms">${etat.liste.map((p) => `
-        <button class="carte choix-nom" data-action="cest-moi" data-id="${esc(p.id)}">
-          <strong>${esc(p.prenom)}</strong>${p.surnom ? `<small>${esc(p.surnom)}</small>` : ""}
-        </button>`).join("")}</div>` : vide("La liste est vide pour l'instant.")}
-      <h2 class="titre-section">Pas dans la liste ?</h2>
+      <h2 class="titre-section">Déjà venu·e aux JOC ?</h2>
+      <p class="aide">Retrouve ton prénom : ton profil et ton historique t'attendent.</p>
+      ${etat.liste.length ? `
+        <input class="filtre-noms" id="filtre-noms" type="search" placeholder="🔎 Cherche ton prénom" autocomplete="off">
+        <div class="choix-noms">${etat.liste.map((p) => `
+          <button class="carte choix-nom" data-action="cest-moi" data-id="${esc(p.id)}" data-recherche="${esc(`${p.prenom} ${p.surnom || ""}`.toLowerCase())}">
+            <strong>${esc(p.prenom)}</strong>${p.surnom ? `<small>${esc(p.surnom)}</small>` : ""}
+          </button>`).join("")}</div>` : vide("Tout le monde a déjà retrouvé son profil.")}
+      <h2 class="titre-section">Première fois aux JOC ?</h2>
       <form class="carte formulaire" data-form="nouveau-participant">
+        <p>Bienvenue dans la famille ! Crée ton profil en 10 secondes.</p>
         <label>Ton prénom<input name="prenom" maxlength="40" autocomplete="given-name" required></label>
-        <button class="bouton bouton--secondaire" type="submit">C'est moi, je m'ajoute</button>
+        <button class="bouton" type="submit">✨ Je crée mon profil</button>
       </form>
     `;
   };
+
+  // Filtre de la liste des prénoms pendant la frappe
+  document.addEventListener("input", (e) => {
+    if (e.target.id !== "filtre-noms") return;
+    const texte = e.target.value.trim().toLowerCase();
+    document.querySelectorAll(".choix-nom").forEach((b) => { b.hidden = texte && !b.dataset.recherche.includes(texte); });
+  });
 
   A.code = async ({ valeurs, ctx }) => {
     const code = valeurs.code.trim();
@@ -156,7 +167,8 @@
   };
 
   A["cest-moi"] = async ({ el, ctx }) => {
-    if (!confirm(`Tu confirmes que c'est bien toi ?`)) return;
+    const nom = el.querySelector("strong")?.textContent || "";
+    if (!confirm(`Tu confirmes que tu es ${nom} ?`)) return;
     await DATA.auth.rejoindre(etat.code, el.dataset.id, null);
     etat.liste = null;
     ctx.toast("Bienvenue ! Complète ton profil 😎");

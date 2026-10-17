@@ -424,6 +424,42 @@
       demoInterdit();
       verifier(await sb.from(table).upsert({ participant_id: participantId, ...champs }, { onConflict: "participant_id" }));
     },
+    // Passage à l'édition suivante. Chaque étape peut être relancée sans risque.
+    // m = modèle actuel, choix = { edition, annee, debut, fin, dates, decalage }
+    async nouvelleEdition(m, choix) {
+      demoInterdit();
+      const ancienneAnnee = parseInt(m.infos.annee, 10) || choix.annee - 1;
+      // 1. Archive : une ligne d'historique par participant pour l'édition qui se termine
+      const estParticipation = (l) => /^(Équipe|Participant)/.test(l.titre);
+      const deja = new Set(m.participants.filter((p) => p.palmares.some((l) => l.annee === ancienneAnnee && estParticipation(l))).map((p) => p.id));
+      const archives = m.participants.filter((p) => !deja.has(p.id)).map((p) => {
+        const eq = m.equipes.find((e) => e.id === p.equipeId);
+        return { participant_id: p.id, annee: ancienneAnnee, titre: eq ? `Équipe ${eq.nom} ${eq.emoji}` : "Participant·e" };
+      });
+      if (archives.length) verifier(await sb.from("palmares").insert(archives));
+      // 2. Épreuves et résultats de l'ancienne édition
+      verifier(await sb.from("scores").delete().gte("epreuve_id", 0));
+      verifier(await sb.from("programme").delete().eq("type", "epreuve"));
+      verifier(await sb.from("epreuves").delete().gte("id", 0));
+      // 3. Programme type décalé sur les nouvelles dates
+      for (const l of m.programme.filter((x) => x.type !== "epreuve")) {
+        const jour = new Date(`${l.jour}T12:00:00Z`);
+        jour.setUTCDate(jour.getUTCDate() + choix.decalage);
+        verifier(await sb.from("programme").update({ jour: jour.toISOString().slice(0, 10) }).eq("id", l.id));
+      }
+      // 4. Remise à zéro : présences, équipes, paiements, cases cochées, dépenses, spectateurs
+      verifier(await sb.from("participants").update({ present: false, equipe_id: null }).not("id", "is", null));
+      verifier(await sb.from("suivi_orga").update({ acompte_paye: false, solde_paye: false, reste_du: 0 }).not("participant_id", "is", null));
+      verifier(await sb.from("taches").update({ fait: false }).gte("id", 0));
+      verifier(await sb.from("courses").update({ achete: false }).gte("id", 0));
+      verifier(await sb.from("depenses").delete().gte("id", 0));
+      verifier(await sb.from("spectateurs").delete().gte("id", 0));
+      // 5. Nouvelles infos
+      verifier(await sb.from("infos").upsert([
+        { cle: "edition", valeur: choix.edition }, { cle: "annee", valeur: String(choix.annee) },
+        { cle: "dates", valeur: choix.dates }, { cle: "annonce", valeur: `Les JOC ${choix.annee} se préparent ! 🎆` },
+      ]));
+    },
     async supprimerPalmares(id) {
       demoInterdit();
       verifier(await sb.from("palmares").delete().eq("id", id));

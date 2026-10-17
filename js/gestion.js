@@ -397,4 +397,70 @@
       </div>
     `;
   };
+
+  // ---------- Nouvelle édition ----------
+
+  const ORDINAL = (n) => `${n}${n === 1 ? "re" : "e"} édition`;
+  const jourLong = (iso) => new Date(iso + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+
+  // Décalage (en jours) qui pose l'ancien programme sur les nouvelles dates, en gardant les jours de la semaine
+  function calculerDecalage(programme, debut) {
+    const nouveau = new Date(debut + "T12:00:00Z");
+    const jours = [...new Set(programme.filter((l) => l.type !== "epreuve").map((l) => l.jour))].sort();
+    if (!jours.length) return 0;
+    const memeJour = jours.find((j) => new Date(j + "T12:00:00Z").getUTCDay() === nouveau.getUTCDay()) || jours[0];
+    return Math.round((nouveau - new Date(memeJour + "T12:00:00Z")) / 86400000);
+  }
+
+  function texteDates(debut, fin) {
+    const d = new Date(debut + "T12:00:00"), f = new Date(fin + "T12:00:00");
+    const jd = d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric" });
+    const jf = f.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    return `Du ${jd} au ${jf}`;
+  }
+
+  E["orga/edition"] = (d) => {
+    const annee = (parseInt(d.infos.annee, 10) || new Date().getFullYear()) + 1;
+    const numero = (parseInt(d.infos.edition, 10) || 0) + 1;
+    return `
+      ${retour}<h1 class="titre-page">Nouvelle édition</h1>
+      <div class="carte">
+        <p><strong>Ce que fait ce bouton :</strong></p>
+        <ul class="liste-explication">
+          <li>🏛️ L'édition ${esc(d.infos.annee || "")} part dans l'historique de chacun (avec son équipe).</li>
+          <li>👥 Les participants et leurs profils sont gardés, mais tout le monde repasse <strong>sans équipe</strong> et <strong>pas encore là</strong>.</li>
+          <li>📅 Le programme type (repas, cérémonies) est recalé sur les nouvelles dates. Les épreuves et les résultats sont retirés.</li>
+          <li>✅ Tâches et 🛒 courses sont gardées mais décochées.</li>
+          <li>💳 Paiements remis à zéro, 💶 dépenses et 👀 spectateurs effacés.</li>
+        </ul>
+      </div>
+      <form class="carte formulaire" data-form="nouvelle-edition">
+        <div class="deux-colonnes">
+          <label>Numéro<input name="numero" type="number" inputmode="numeric" min="1" value="${numero}" required></label>
+          <label>Année<input name="annee" type="number" inputmode="numeric" value="${annee}" required></label>
+        </div>
+        <label>Premier jour<input name="debut" type="date" required></label>
+        <label>Dernier jour<input name="fin" type="date" required></label>
+        <label>Pour confirmer, écris l'année<input name="confirmation" inputmode="numeric" autocomplete="off" required></label>
+        <button class="bouton bouton--orga" type="submit">🎆 Lancer la nouvelle édition</button>
+      </form>
+    `;
+  };
+
+  A["nouvelle-edition"] = async ({ valeurs, ctx }) => {
+    const annee = parseInt(valeurs.annee, 10);
+    if (String(annee) !== valeurs.confirmation.trim()) return ctx.toast(`Écris ${annee} dans la case de confirmation.`, "alerte");
+    if (valeurs.fin < valeurs.debut) return ctx.toast("Le dernier jour est avant le premier.", "alerte");
+    const decalage = calculerDecalage(ctx.d.programme, valeurs.debut);
+    const choix = {
+      edition: ORDINAL(parseInt(valeurs.numero, 10)), annee, decalage,
+      dates: texteDates(valeurs.debut, valeurs.fin),
+    };
+    if (!confirm(`Lancer les JOC ${annee} (${choix.dates}) ? L'édition actuelle part dans l'historique.`)) return;
+    ctx.toast("Préparation de la nouvelle édition…");
+    await DATA.ecrire.nouvelleEdition(ctx.d, choix);
+    ctx.toast(`Les JOC ${annee} sont lancés ! 🎆`);
+    await ctx.rafraichir(true);
+    ctx.aller("#/programme");
+  };
 })();
