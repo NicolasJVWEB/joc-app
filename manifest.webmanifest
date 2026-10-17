@@ -1,7 +1,7 @@
 {
-  "name": "JOC · Jeux Olympiques des Copains",
+  "name": "JOC · Jeux Olympiques des Copaings",
   "short_name": "JOC",
-  "description": "Classement, épreuves et équipes des Jeux Olympiques des Copains.",
+  "description": "Classement, épreuves et équipes des Jeux Olympiques des Copaings.",
   "lang": "fr",
   "start_url": "./",
   "scope": "./",

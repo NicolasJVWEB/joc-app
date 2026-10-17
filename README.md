@@ -1,4 +1,4 @@
-# JOC · Jeux Olympiques des Copains
+# JOC · Jeux Olympiques des Copaings
 
 La web app officielle des JOC : classement en direct, programme des épreuves et fiches équipes, dans la poche de chaque participant.
 

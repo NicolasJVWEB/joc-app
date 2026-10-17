@@ -4,7 +4,7 @@
  */
 window.JOC_CONFIG = {
   // Nom affiché dans l'app
-  nom: "Jeux Olympiques des Copains",
+  nom: "Jeux Olympiques des Copaings",
   sigle: "JOC",
 
   // Identifiant du Google Sheet (la longue suite de caractères dans l'URL,

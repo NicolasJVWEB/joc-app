@@ -2,7 +2,7 @@
 
 ## Contexte
 
-- **JOC = Jeux Olympiques des Copains** : un week-end de jeux par équipes entre une quarantaine d'amis, organisé chaque année. 3e édition en 2026.
+- **JOC = Jeux Olympiques des Copaings** (orthographe "Copaings" voulue, ne pas corriger) : un week-end de jeux par équipes entre une quarantaine d'amis, organisé chaque année. 3e édition en 2026.
 - Projet perso de Guillaume, **sans aucun rapport avec Hélia** : les règles métier Hélia (toile, Serge Ferrari, HubSpot, Drive Affaires...) ne s'appliquent pas ici.
 - **Guillaume ne code pas.** Explique chaque changement en langage simple, sans jargon, et dis-lui concrètement quoi faire de son côté (cliquer où, remplir quoi).
 
