@@ -1,0 +1,17 @@
+{
+  "name": "JOC · Jeux Olympiques des Copains",
+  "short_name": "JOC",
+  "description": "Classement, épreuves et équipes des Jeux Olympiques des Copains.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fffbea",
+  "theme_color": "#1b1533",
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

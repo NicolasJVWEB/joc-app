@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>JOC · Jeux Olympiques des Copains</title>
+  <meta name="description" content="Classement, épreuves et équipes des Jeux Olympiques des Copains.">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#1b1533">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/png" href="./assets/icons/favicon-48.png">
+  <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="JOC">
+  <link rel="preload" href="./assets/fonts/lilita-one-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <header class="entete">
+    <a class="entete__marque" href="#/">
+      <img src="./assets/logo.png" alt="" width="40" height="40">
+      <span>JOC</span>
+    </a>
+    <button id="rafraichir" class="entete__bouton" type="button" aria-label="Rafraîchir les données">↻</button>
+  </header>
+  <div class="rayures" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+
+  <main id="vue" class="vue">
+    <div class="chargement"><img src="./assets/logo.png" alt="" width="120" height="120"><p>Chargement…</p></div>
+  </main>
+
+  <p id="etat" class="etat" role="status"></p>
+
+  <nav class="nav" aria-label="Navigation principale">
+    <a href="#/" data-onglet=""><span class="nav__icone">🏠</span>Accueil</a>
+    <a href="#/classement" data-onglet="classement"><span class="nav__icone">🏆</span>Classement</a>
+    <a href="#/epreuves" data-onglet="epreuves"><span class="nav__icone">🎯</span>Épreuves</a>
+    <a href="#/equipes" data-onglet="equipes"><span class="nav__icone">👥</span>Équipes</a>
+  </nav>
+
+  <script src="./js/config.js"></script>
+  <script src="./js/data.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
