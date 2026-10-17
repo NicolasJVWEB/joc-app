@@ -8,11 +8,13 @@
   const A = (window.JOC_ACTIONS = window.JOC_ACTIONS || {});
 
   // État des écrans de connexion (pas besoin de le garder après rechargement)
-  const etat = { onglet: "connexion", code: "", liste: null };
+  const etat = { onglet: "connexion", code: "", liste: null, emailRecup: "" };
 
   // ---------- Connexion / création de compte ----------
 
-  E.connexion = () => `
+  E.connexion = () => {
+    if (etat.onglet === "recuperation") return ecranRecuperation();
+    return `
     <section class="hero hero--compact">
       <img class="hero__logo" src="./assets/logo.png" alt="Logo JOC" width="140" height="141">
       <h1 class="titre-sticker">Bienvenue aux JOC !</h1>
@@ -28,6 +30,25 @@
       ${etat.onglet === "connexion" ? `<button class="lien" type="button" data-action="mdp-oublie">Mot de passe oublié ?</button>` : `<p class="aide">Ensuite, il te faudra le code JOC donné par les orgas.</p>`}
     </form>
   `;
+  };
+
+  // Mot de passe oublié : code à 6 chiffres reçu par mail, à taper ici.
+  // (Marche partout, même si le mail s'ouvre dans un autre navigateur que l'app.)
+  function ecranRecuperation() {
+    return `
+      <h1 class="titre-page">Mot de passe oublié</h1>
+      <form class="carte formulaire" data-form="code-recuperation">
+        <p>On t'a envoyé un mail${etat.emailRecup ? ` à <strong>${esc(etat.emailRecup)}</strong>` : ""}. Recopie le <strong>code</strong> qu'il contient, puis choisis ton nouveau mot de passe.</p>
+        <label>Mail<input type="email" name="email" value="${esc(etat.emailRecup)}" autocomplete="email" required></label>
+        <label>Code reçu par mail<input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="10" required></label>
+        <label>Nouveau mot de passe<input type="password" name="mdp" minlength="6" autocomplete="new-password" required></label>
+        <button class="bouton" type="submit">Changer mon mot de passe</button>
+        <p class="aide">Pas de mail ? Regarde dans les spams, puis réessaie dans quelques minutes.</p>
+      </form>
+      <button class="lien" data-action="renvoyer-code">Renvoyer un code</button>
+      <button class="lien" data-action="onglet-connexion" data-onglet="connexion">← Retour à la connexion</button>
+    `;
+  }
 
   A["onglet-connexion"] = ({ el, ctx }) => { etat.onglet = el.dataset.onglet; ctx.afficher(); };
 
@@ -45,7 +66,26 @@
     const email = el.form.email.value.trim();
     if (!email) return ctx.toast("Écris d'abord ton mail au-dessus.", "alerte");
     await DATA.auth.motDePasseOublie(email);
-    ctx.toast("Mail envoyé ! Clique sur le lien pour choisir un nouveau mot de passe.");
+    etat.emailRecup = email;
+    etat.onglet = "recuperation";
+    ctx.afficher();
+    ctx.toast("Mail envoyé ! Recopie le code qu'il contient.");
+  };
+
+  A["renvoyer-code"] = async ({ ctx }) => {
+    const champ = document.querySelector("form[data-form=code-recuperation] input[name=email]");
+    const email = (champ && champ.value.trim()) || etat.emailRecup;
+    if (!email) return ctx.toast("Écris d'abord ton mail.", "alerte");
+    await DATA.auth.motDePasseOublie(email);
+    etat.emailRecup = email;
+    ctx.toast("Nouveau mail envoyé !");
+  };
+
+  A["code-recuperation"] = async ({ valeurs, ctx }) => {
+    await DATA.auth.recupererAvecCode(valeurs.email.trim(), valeurs.code.replace(/\s/g, ""), valeurs.mdp);
+    etat.onglet = "connexion";
+    ctx.toast("Mot de passe changé, tu es connecté ! 🎉");
+    await ctx.rafraichir(true);
   };
 
   E["nouveau-mdp"] = () => `

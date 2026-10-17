@@ -32,6 +32,17 @@ Supabase est le service gratuit qui stocke les comptes, les profils, les photos,
    - **Redirect URLs** : cliquer sur **Add URL** et ajouter la même adresse.
    - **Save**. (Utile pour le lien « mot de passe oublié ».)
 
+3. Toujours dans **Authentication** : **Emails** (ou **Email Templates**), modèle **Reset password** (« Reset Password »).
+   Remplacer le sujet et le contenu par ceci, puis **Save** (le mail contient alors un code à 6 chiffres, à taper dans l'app : ça marche même si le mail s'ouvre dans un autre navigateur) :
+   - Sujet : `JOC · Ton code pour changer de mot de passe`
+   - Contenu :
+     ```html
+     <h2>Mot de passe oublié ?</h2>
+     <p>Voici ton code, à taper dans l'app JOC :</p>
+     <p style="font-size:28px;font-weight:bold;letter-spacing:4px">{{ .Token }}</p>
+     <p>Il est valable 1 heure. Si tu n'as rien demandé, ignore ce mail.</p>
+     ```
+
 ## 4. Donner les clés à l'app
 
 1. Cliquer sur le bouton **Connect** en haut de la page du projet (ou **Project Settings** > **API Keys**).
