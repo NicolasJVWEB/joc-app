@@ -19,8 +19,8 @@
   // Écrans avec formulaire : le rafraîchissement automatique ne les redessine pas
   const FORMULAIRES = ["connexion", "rejoindre", "nouveau-mdp", "moi/modifier", "orga/scores", "orga/epreuve",
     "orga/participant", "orga/equipes", "orga/infos", "orga/modifier", "orga/courses", "orga/taches",
-    "orga/budget", "orga/spectateurs", "orga/paiements", "orga/niveaux", "orga/programme", "orga/edition"];
-  const ONGLET_ACTIF = { epreuve: "programme", epreuves: "programme", equipe: "equipes", presents: "equipes", participant: "equipes", historique: "" };
+    "orga/budget", "orga/spectateurs", "orga/paiements", "orga/niveaux", "orga/programme", "orga/edition", "buzzer", "orga/buzzer"];
+  const ONGLET_ACTIF = { epreuve: "programme", epreuves: "programme", equipe: "equipes", presents: "equipes", participant: "equipes", historique: "", buzzer: "programme" };
 
   // "#/orga/scores/12" -> { cle: "orga/scores", param: "12" }
   function lireAdresse() {
@@ -76,6 +76,7 @@
       const resultat = connecte ? await DATA.charger() : null;
       donnees = resultat ? resultat.modele : null;
       if (resultat) majEtat(resultat); else etat.textContent = "";
+      if (donnees) apresChargement(donnees);
     } catch (erreur) {
       console.warn(erreur);
       const cache = connecte ? DATA.depuisCache() : null;
@@ -92,6 +93,16 @@
     const y = window.scrollY;
     afficher();
     if (!force) window.scrollTo(0, y);
+  }
+
+  // Après chaque chargement : buzzer en direct + trace de passage (au plus toutes les 10 minutes)
+  let derniereTrace = 0;
+  function apresChargement(d) {
+    window.JOC_BUZZER?.apresChargement(d);
+    if (d.moi && Date.now() - derniereTrace > 10 * 60 * 1000) {
+      derniereTrace = Date.now();
+      DATA.ecrire.marquerVisite(d.moi.id).catch(() => {});
+    }
   }
 
   const ctx = {

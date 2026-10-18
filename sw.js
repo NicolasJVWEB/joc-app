@@ -6,7 +6,7 @@
  *
  * Augmenter VERSION quand on ajoute ou renomme un fichier de la liste FICHIERS.
  */
-const VERSION = "joc-v8";
+const VERSION = "joc-v9";
 const FICHIERS = [
   "./",
   "./index.html",
@@ -19,6 +19,7 @@ const FICHIERS = [
   "./js/compte.js",
   "./js/orga.js",
   "./js/gestion.js",
+  "./js/buzzer.js",
   "./js/app.js",
   "./manifest.webmanifest",
   "./assets/logo.png",

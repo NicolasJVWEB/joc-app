@@ -117,6 +117,8 @@
       ${enCours.length ? `<h2 class="titre-section">En ce moment</h2>${enCours.map(carteEpreuve).join("")}` : ""}
       ${prochaine ? `<h2 class="titre-section">Prochaine épreuve</h2>${carteEpreuve(prochaine)}` : ""}
 
+      <a class="bouton bouton--secondaire" href="#/buzzer">🔔 Le buzzer</a>
+
       <h2 class="titre-section">Top 3</h2>
       ${classement.length ? classement.slice(0, 3).map(ligneClassement).join("") : vide("Aucune équipe pour l'instant.")}
       <a class="bouton" href="#/classement">Voir tout le classement</a>
