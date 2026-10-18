@@ -124,6 +124,9 @@
       photo: p.photo || "",
       photoUrl: p.photo ? brut.photos[p.photo] || "" : "",
       devise: p.devise || "",
+      rejointLe: p.rejoint_le || null,
+      derniereVisite: p.derniere_visite || null,
+      nouveau: p.nouveau === true || p.nouveau === "oui",
       equipeId: p.equipe_id || "",
       present: !!p.present,
       estAdmin: !!p.est_admin,
@@ -460,11 +463,63 @@
         { cle: "dates", valeur: choix.dates }, { cle: "annonce", valeur: `Les JOC ${choix.annee} se préparent ! 🎆` },
       ]));
     },
+    // Petite trace de passage, pour que les orgas voient qui utilise l'app
+    async marquerVisite(id) {
+      if (estDemo) return;
+      await sb.from("participants").update({ derniere_visite: new Date().toISOString() }).eq("id", id);
+    },
     async supprimerPalmares(id) {
       demoInterdit();
       verifier(await sb.from("palmares").delete().eq("id", id));
     },
   };
 
-  window.JOC_DATA = { charger, depuisCache, viderCache, estDemo, auth, ecrire };
+  // ---------- Buzzer en direct ----------
+  const buzzer = {
+    async lire() {
+      demoInterdit();
+      const r = await sb.from("buzzer").select("*").eq("id", 1).maybeSingle();
+      verifier(r);
+      const etat = r.data || { ouvert: false, manche: 0, question: "" };
+      const b = await sb.from("buzzes").select("*").eq("manche", etat.manche).order("buzz_le");
+      verifier(b);
+      return { etat, buzzes: b.data || [] };
+    },
+    async buzzer(manche, participantId) {
+      demoInterdit();
+      const { error } = await sb.from("buzzes").insert({ manche, participant_id: participantId });
+      if (!error) return;
+      if (/duplicate|unique/i.test(error.message)) throw new Error("Tu as déjà buzzé !");
+      if (/row-level security/i.test(error.message)) throw new Error("Trop tard, le buzzer est fermé !");
+      throw new Error(traduireErreur(error.message));
+    },
+    async ouvrir(question) {
+      demoInterdit();
+      const r = await sb.from("buzzer").select("manche").eq("id", 1).maybeSingle();
+      verifier(r);
+      verifier(await sb.from("buzzer").update({
+        ouvert: true, manche: ((r.data && r.data.manche) || 0) + 1, question: question || "", mis_a_jour: new Date().toISOString(),
+      }).eq("id", 1));
+    },
+    async fermer() {
+      demoInterdit();
+      verifier(await sb.from("buzzer").update({ ouvert: false, mis_a_jour: new Date().toISOString() }).eq("id", 1));
+    },
+    async effacer() {
+      demoInterdit();
+      verifier(await sb.from("buzzes").delete().gte("id", 0));
+      verifier(await sb.from("buzzer").update({ ouvert: false, question: "", mis_a_jour: new Date().toISOString() }).eq("id", 1));
+    },
+    // Temps réel : prévient dès que le buzzer change ou que quelqu'un buzze. Renvoie de quoi arrêter l'écoute.
+    ecouter(rappel) {
+      if (estDemo) return () => {};
+      const canal = sb.channel("joc-buzzer")
+        .on("postgres_changes", { event: "*", schema: "public", table: "buzzer" }, rappel)
+        .on("postgres_changes", { event: "*", schema: "public", table: "buzzes" }, rappel)
+        .subscribe();
+      return () => sb.removeChannel(canal);
+    },
+  };
+
+  window.JOC_DATA = { charger, depuisCache, viderCache, estDemo, auth, ecrire, buzzer };
 })();

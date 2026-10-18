@@ -20,8 +20,9 @@
     <h1 class="titre-page">Espace orga</h1>
     <h2 class="titre-section">Pendant les jeux</h2>
     <div class="grille">
+      <a class="carte tuile tuile--menu" href="#/orga/buzzer"><span class="tuile__emoji">🔔</span><strong>Buzzer</strong><small>Questions en direct</small></a>
       <a class="carte tuile tuile--menu" href="#/orga/scores"><span class="tuile__emoji">🏆</span><strong>Résultats</strong><small>Saisir les classements</small></a>
-      <a class="carte tuile tuile--menu" href="#/orga/participants"><span class="tuile__emoji">✋</span><strong>Participants</strong><small>${d.participants.filter((p) => p.present).length}/${d.participants.length} présents</small></a>
+      <a class="carte tuile tuile--menu" href="#/orga/participants"><span class="tuile__emoji">✋</span><strong>Participants</strong><small>${d.participants.filter((p) => p.compteId).length}/${d.participants.length} comptes · ${d.participants.filter((p) => p.present).length} présents</small></a>
       <a class="carte tuile tuile--menu" href="#/orga/programme"><span class="tuile__emoji">📅</span><strong>Programme</strong><small>${d.programme.length} moments</small></a>
       <a class="carte tuile tuile--menu" href="#/orga/epreuves"><span class="tuile__emoji">🎯</span><strong>Épreuves</strong><small>${d.epreuves.length} au programme</small></a>
     </div>
@@ -160,24 +161,73 @@
   const optionsEquipe = (d, actuelle) => `<option value="">Sans équipe</option>` + d.equipes
     .map((eq) => `<option value="${esc(eq.id)}" ${eq.id === actuelle ? "selected" : ""}>${esc(eq.emoji)} ${esc(eq.nom)}</option>`).join("");
 
-  E["orga/participants"] = (d) => `
+  // Filtre de la liste des participants (tous, avec compte, sans compte, nouveaux)
+  let filtreParticipants = "tous";
+  const FILTRES = {
+    tous: ["Tous", () => true],
+    avec: ["✅ Compte relié", (p) => p.compteId],
+    sans: ["⏳ Pas encore venu", (p) => !p.compteId],
+    nouveaux: ["✨ Nouveaux", (p) => p.nouveau],
+  };
+
+  // "il y a 3 h", "hier", "le 12/03"
+  function ilYa(date) {
+    if (!date) return "";
+    const minutes = Math.round((Date.now() - new Date(date)) / 60000);
+    if (minutes < 2) return "à l'instant";
+    if (minutes < 60) return `il y a ${minutes} min`;
+    if (minutes < 24 * 60) return `il y a ${Math.round(minutes / 60)} h`;
+    if (minutes < 48 * 60) return "hier";
+    return `le ${new Date(date).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" })}`;
+  }
+
+  function etatCompte(p) {
+    if (!p.compteId) return "⏳ Pas encore de compte";
+    const morceaux = [p.nouveau ? "✨ Nouveau" : "✅ Compte relié"];
+    if (p.rejointLe) morceaux.push(`inscrit ${ilYa(p.rejointLe)}`);
+    if (p.derniereVisite) morceaux.push(`vu ${ilYa(p.derniereVisite)}`);
+    return morceaux.join(" · ");
+  }
+
+  E["orga/participants"] = (d) => {
+    const tous = d.participants;
+    const relies = tous.filter((p) => p.compteId).length;
+    const anciensSans = tous.filter((p) => !p.compteId).length;
+    const nouveaux = tous.filter((p) => p.nouveau).length;
+    const actifs = tous.filter((p) => p.derniereVisite && Date.now() - new Date(p.derniereVisite) < 24 * 3600 * 1000).length;
+    const liste = tous.filter(FILTRES[filtreParticipants][1]);
+    return `
     ${retour}<h1 class="titre-page">Participants</h1>
+    <div class="carte suivi-comptes">
+      <div class="suivi-comptes__titre"><strong>${relies}/${tous.length}</strong> ont relié leur compte</div>
+      <div class="jauge"><span style="width:${tous.length ? Math.round((relies / tous.length) * 100) : 0}%"></span></div>
+      <div class="compteur compteur--suivi">
+        <div class="compteur__case"><strong>${anciensSans}</strong><span>pas encore venus</span></div>
+        <div class="compteur__case"><strong>${nouveaux}</strong><span>nouveaux</span></div>
+        <div class="compteur__case"><strong>${actifs}</strong><span>vus en 24 h</span></div>
+      </div>
+    </div>
+    <div class="filtres">${Object.entries(FILTRES).map(([cle, [libelle]]) => `
+      <button class="${cle === filtreParticipants ? "actif" : ""}" data-action="filtre-participants" data-filtre="${cle}">${libelle}</button>`).join("")}</div>
     <form class="carte formulaire formulaire--ligne" data-form="ajout-participant">
-      <input name="prenom" placeholder="Prénom" maxlength="40" required>
+      <input name="prenom" placeholder="Ajouter un prénom" maxlength="40" required>
       <select name="equipe">${optionsEquipe(d, "")}</select>
       <button class="bouton" type="submit">➕</button>
     </form>
-    <p class="aide">${d.participants.filter((p) => p.present).length}/${d.participants.length} présents · ${d.participants.filter((p) => p.compteId).length} comptes créés</p>
-    ${d.participants.map((p) => `
+    <p class="aide">${tous.filter((p) => p.present).length}/${tous.length} présents · ${liste.length} affichés</p>
+    ${liste.length ? liste.map((p) => `
       <div class="carte ligne ligne--orga">
         <a href="#/orga/participant/${encodeURIComponent(p.id)}">${portrait(p)}</a>
-        <a class="ligne__texte" href="#/orga/participant/${encodeURIComponent(p.id)}"><strong>${esc(nomAffiche(p))}</strong><small>${p.compteId ? "Compte créé" : "Pas encore de compte"}${p.estAdmin ? " · ⭐ Orga" : ""}</small></a>
+        <a class="ligne__texte" href="#/orga/participant/${encodeURIComponent(p.id)}"><strong>${esc(nomAffiche(p))}</strong><small>${etatCompte(p)}${p.estAdmin ? " · ⭐ Orga" : ""}</small></a>
         <select data-action="changer-equipe" data-id="${esc(p.id)}" aria-label="Équipe">${optionsEquipe(d, p.equipeId)}</select>
         <label class="interrupteur" title="Présent">
           <input type="checkbox" data-action="changer-presence" data-id="${esc(p.id)}" ${p.present ? "checked" : ""}><span></span>
         </label>
-      </div>`).join("")}
+      </div>`).join("") : vide("Personne dans cette catégorie.")}
   `;
+  };
+
+  A["filtre-participants"] = ({ el, ctx }) => { filtreParticipants = el.dataset.filtre; ctx.afficher(); };
 
   A["ajout-participant"] = async ({ valeurs, ctx }) => {
     await DATA.ecrire.ajouterParticipant({ prenom: valeurs.prenom.trim(), equipe_id: valeurs.equipe || null });

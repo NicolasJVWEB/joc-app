@@ -491,6 +491,56 @@ a.programme__ligne:active { background: var(--joc-creme); }
 .details a { color: var(--joc-bleu); font-weight: 800; }
 .avertissement { background: color-mix(in srgb, var(--joc-rouge) 12%, white); border-color: var(--joc-rouge); }
 
+/* Suivi des comptes */
+.suivi-comptes__titre { font-size: 17px; }
+.suivi-comptes__titre strong { font-family: var(--titre); font-weight: 400; font-size: 26px; color: var(--joc-vert); }
+.compteur--suivi { margin-top: 10px; }
+.compteur--suivi .compteur__case { box-shadow: none; border-width: 2px; }
+.filtres { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 10px; scrollbar-width: none; }
+.filtres button { flex-shrink: 0; font: inherit; font-weight: 800; font-size: 13px; padding: 7px 12px; border: 2px solid var(--joc-encre); border-radius: 999px; background: #fff; color: var(--texte); cursor: pointer; }
+.filtres button.actif { background: var(--joc-encre); color: var(--joc-creme); }
+
+/* Buzzer */
+.buzzer__question { font-family: var(--titre); font-size: 24px; line-height: 1.15; text-align: center; margin: 4px 0 16px; }
+.buzzer__question--grand { font-size: 28px; }
+.buzzer__zone { display: grid; place-items: center; padding: 10px 0 22px; }
+.buzzer-bouton {
+  width: min(72vw, 280px); aspect-ratio: 1; border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  border: 6px solid var(--joc-encre); box-shadow: 0 10px 0 var(--joc-encre);
+  font-family: var(--titre); color: #fff; -webkit-user-select: none; user-select: none; touch-action: manipulation;
+}
+.buzzer-bouton span { font-size: 64px; line-height: 1; -webkit-text-stroke: 3px var(--joc-encre); paint-order: stroke fill; }
+.buzzer-bouton small { font-family: var(--corps); font-weight: 900; font-size: 18px; color: var(--joc-encre); }
+.buzzer-bouton--actif { background: var(--equipe, var(--joc-rouge)); cursor: pointer; animation: battement 0.9s ease-in-out infinite; }
+.buzzer-bouton--actif.enfonce, .buzzer-bouton--actif:active { transform: translateY(8px); box-shadow: 0 2px 0 var(--joc-encre); animation: none; }
+.buzzer-bouton--ferme { background: #d8d4c4; }
+.buzzer-bouton--fait { background: var(--joc-creme); }
+.buzzer-bouton--fait span { -webkit-text-stroke: 0; }
+@keyframes battement { 50% { transform: scale(1.04); } }
+.buzzer__classement { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.buzzer__classement li { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--surface); border: var(--trait); border-left: 10px solid var(--equipe, var(--joc-encre)); border-radius: 14px; }
+.buzzer__classement li.premier { background: color-mix(in srgb, var(--joc-jaune) 35%, white); box-shadow: var(--ombre); }
+.buzzer__rang { width: 30px; text-align: center; font-family: var(--titre); font-size: 22px; }
+.buzzer__ecart { font-weight: 900; color: var(--texte-doux); font-variant-numeric: tabular-nums; }
+.buzzer__vide { text-align: center; color: var(--texte-doux); font-weight: 800; }
+.buzzer__statut { text-align: center; font-weight: 900; padding: 10px; border: var(--trait); border-radius: 14px; background: #d8d4c4; margin: 14px 0; }
+.buzzer__statut.ouvert { background: var(--joc-vert); color: #fff; }
+.boutons-ligne { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.boutons-ligne .bouton { margin: 0 0 12px; }
+/* Grand écran (vidéoprojecteur, télé) */
+.grand-ecran .entete, .grand-ecran .rayures, .grand-ecran .nav, .grand-ecran .etat, .grand-ecran .retour,
+.grand-ecran .titre-page, .grand-ecran form, .grand-ecran .boutons-ligne, .grand-ecran .vue > .aide { display: none !important; }
+.grand-ecran { padding: 0; }
+.grand-ecran .vue { max-width: 1100px; padding-top: 24px; }
+.grand-ecran .bouton--grand-ecran { width: auto; padding: 8px 16px; font-size: 14px; margin: 0 0 0 auto; display: block; }
+.grand-ecran .buzzer__question--grand { font-size: clamp(32px, 5vw, 64px); }
+.grand-ecran .buzzer__classement--grand li { padding: 16px 22px; }
+.grand-ecran .buzzer__classement--grand strong { font-size: clamp(22px, 3vw, 40px); }
+.grand-ecran .buzzer__classement--grand .portrait { width: 64px; height: 64px; font-size: 36px; }
+.grand-ecran .buzzer__classement--grand .buzzer__ecart, .grand-ecran .buzzer__classement--grand .buzzer__rang { font-size: clamp(20px, 2.5vw, 32px); }
+.grand-ecran .buzzer__statut { font-size: 24px; }
+
 /* Message flottant */
 .toast {
   position: fixed; left: 16px; right: 16px; bottom: calc(var(--hauteur-nav) + env(safe-area-inset-bottom) + 14px);

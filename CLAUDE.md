@@ -27,6 +27,8 @@
 - **Gestion de l'événement** (remplace le dossier Drive « Gestion » du CAJOC) : programme jour par jour (visible par tous), et pour les orgas uniquement : tâches du comité, courses, budget, paiements, spectateurs, récap t-shirts / régimes / arrivées, équilibre des équipes (niveaux sport et culture).
   - Infos perso utiles à l'orga (taille de t-shirt, régime, arrivée) : table `fiches_privees`, lisible par la personne et les orgas seulement. Paiements et niveaux : table `suivi_orga`, orgas seulement.
 - **Éditions** : l'app gère une édition à la fois (infos `edition`, `annee`, `dates`). Espace orga > « Nouvelle édition » archive l'édition en cours dans l'historique de chacun (lignes `palmares` « Équipe … » ou « Participant·e »), garde participants, tâches et courses (décochées) et le programme type recalé sur les nouvelles dates (mêmes jours de la semaine), et remet à zéro épreuves, scores, équipes, présences, paiements, dépenses et spectateurs. Écran « La légende des JOC » (`#/historique`) : toutes les éditions passées.
+- **Buzzer en direct** (`js/buzzer.js`) : l'orga ouvre une question (Orga > Buzzer), tous les téléphones connectés basculent sur un gros bouton BUZZ. Tables `buzzer` (état, une ligne) et `buzzes` (un buzz par personne et par question, heure fixée par le serveur via trigger). Temps réel Supabase (publication `supabase_realtime`) + vérification toutes les 2 s en secours. Mode grand écran pour vidéoprojecteur.
+- **Suivi des comptes** (Orga > Participants) : comptes reliés / pas encore venus / nouveaux / vus en 24 h, colonnes `rejoint_le`, `derniere_visite`, `nouveau` sur `participants` (protégées contre la triche par le trigger).
 - **Inscription** : « Déjà venu·e aux JOC ? » (on retrouve son prénom, avec recherche) ou « Première fois aux JOC ? » (on crée son profil).
 - L'app se met à jour toute seule (toutes les 60 s et à chaque retour sur l'app), sans redessiner un écran où l'on est en train de saisir.
 
@@ -81,7 +83,8 @@ js/ui.js                Outils d'affichage partagés (esc, couleurs, portraits, 
 js/ecrans.js            Écrans de consultation (accueil, classement, épreuves, équipes, présents, fiches)
 js/compte.js            Connexion, inscription avec le code, profil
 js/orga.js              Espace orga (menu, résultats, épreuves, participants, équipes, infos)
-js/gestion.js           Gestion CAJOC (programme, tâches, courses, budget, paiements, spectateurs, t-shirts, niveaux)
+js/gestion.js           Gestion CAJOC (programme, tâches, courses, budget, paiements, spectateurs, t-shirts, niveaux, nouvelle édition)
+js/buzzer.js            Buzzer en direct (joueurs, pilotage orga, grand écran)
 js/app.js               Navigation, connexion, rafraîchissement, actions
 assets/vendor/          supabase-js auto-hébergé
 supabase/schema.sql     Base de données, sécurité, données de départ
