@@ -93,6 +93,7 @@
     const prochaine = epreuves.find((e) => e.statut === "a_venir");
     const faites = epreuves.filter((e) => e.statut === "terminee").length;
     const presents = participants.filter((p) => p.present).length;
+    const verrou = !!window.JOC_INSCRIPTION && window.JOC_INSCRIPTION.editionVerrouillee(d);
 
     return `
       <section class="hero">
@@ -102,11 +103,14 @@
         ${infos.dates || infos.lieu ? `<p class="hero__infos">${[infos.dates, infos.lieu].filter(Boolean).map(esc).join(" · ")}</p>` : ""}
       </section>
 
-      ${moi ? `<a class="carte salut" href="#/moi">${portrait(moi)}<span><span>Salut <strong>${esc(moi.surnom || moi.prenom)}</strong> !</span><small>${moi.equipeId ? `Équipe ${esc(equipeParId(d, moi.equipeId)?.nom || "")}` : "Pas encore d'équipe"}</small></span></a>` : ""}
+      ${moi ? `<a class="carte salut" href="#/moi">${portrait(moi)}<span><span>Salut <strong>${esc(moi.surnom || moi.prenom)}</strong> !</span><small>${verrou ? "Mon profil" : moi.equipeId ? `Équipe ${esc(equipeParId(d, moi.equipeId)?.nom || "")}` : "Pas encore d'équipe"}</small></span></a>` : ""}
       ${window.JOC_INSCRIPTION ? window.JOC_INSCRIPTION.carteInscription(d) : ""}
 
       ${infos.annonce ? `<div class="carte annonce"><span class="annonce__icone">📣</span><p>${esc(infos.annonce)}</p></div>` : ""}
 
+      ${verrou ? `
+      <p class="aide">🔒 Programme, équipes et classement s'ouvrent dès que tu as répondu.</p>
+      <a class="bouton bouton--secondaire" href="#/historique">🏛️ La légende des JOC</a>` : `
       <div class="compteur">
         <div class="compteur__case"><strong>${faites}/${epreuves.length}</strong><span>épreuves jouées</span></div>
         <a class="compteur__case" href="#/presents"><strong>${presents}/${participants.length}</strong><span>présents</span></a>
@@ -123,7 +127,7 @@
       <h2 class="titre-section">Top 3</h2>
       ${classement.length ? classement.slice(0, 3).map(ligneClassement).join("") : vide("Aucune équipe pour l'instant.")}
       <a class="bouton" href="#/classement">Voir tout le classement</a>
-      <a class="bouton bouton--secondaire" href="#/historique">🏛️ La légende des JOC</a>
+      <a class="bouton bouton--secondaire" href="#/historique">🏛️ La légende des JOC</a>`}
     `;
   };
 
