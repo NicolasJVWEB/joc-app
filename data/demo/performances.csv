@@ -1,0 +1,11 @@
+id,discipline,participant_id,annee,valeur,unite,plus_grand_gagne
+1,Lancer de bûche,p08,2024,18.2,m,oui
+2,Lancer de bûche,p02,2024,16.5,m,oui
+3,Lancer de bûche,p08,2025,21.4,m,oui
+4,Lancer de bûche,p12,2025,19.9,m,oui
+5,Lancer de bûche,p01,2026,22.7,m,oui
+6,Lancer de bûche,p08,2026,20.1,m,oui
+7,Course en sac,p02,2025,14.8,s,non
+8,Course en sac,p07,2025,15.3,s,non
+9,Course en sac,p02,2026,13.9,s,non
+10,Lancer de tong,p11,2026,31.5,m,oui

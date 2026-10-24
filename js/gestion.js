@@ -69,6 +69,19 @@
       valeurs: (l) => ({ libelle: l.libelle, categorie: l.categorie, montant: l.montant, avance_par: l.avancePar }),
       liste: (d) => d.orga.depenses,
     },
+    performances: {
+      titre: "Performance", retour: "#/orga/records",
+      champs: (d) => [
+        { nom: "discipline", label: "Épreuve", requis: true, suggestions: unique([...d.performances.map((x) => x.discipline), ...d.epreuves.map((e) => e.nom)]) },
+        { nom: "participant_id", label: "Qui", type: "choix", options: [...d.participants].sort((a, b) => a.prenom.localeCompare(b.prenom)).map((p) => [p.id, p.surnom ? `${p.prenom} « ${p.surnom} »` : p.prenom]) },
+        { nom: "annee", label: "Année", type: "nombre", requis: true },
+        { nom: "valeur", label: "Performance", type: "nombre", requis: true },
+        { nom: "unite", label: "Unité", suggestions: ["m", "cm", "s", "min", "pts", "kg"] },
+        { nom: "plus_grand_gagne", label: "Le record, c'est…", type: "oui-non", options: [["true", "Le plus grand (distance, points)"], ["false", "Le plus petit (chrono)"]] },
+      ],
+      valeurs: (l) => ({ discipline: l.discipline, participant_id: l.participantId, annee: l.annee, valeur: l.valeur, unite: l.unite, plus_grand_gagne: String(l.plusGrandGagne) }),
+      liste: (d) => d.performances,
+    },
     spectateurs: {
       titre: "Spectateur", retour: "#/orga/spectateurs",
       champs: (d) => [
@@ -84,7 +97,7 @@
   function champHtml(c, valeur) {
     const v = valeur ?? "";
     const id = `champ-${c.nom}`;
-    if (c.type === "choix") {
+    if (c.type === "choix" || c.type === "oui-non") {
       return `<label>${c.label}<select name="${c.nom}">${c.vide ? `<option value="">-</option>` : ""}${c.options
         .map(([val, lib]) => `<option value="${esc(val)}" ${String(val) === String(v) ? "selected" : ""}>${esc(lib)}</option>`).join("")}</select></label>`;
     }
@@ -137,6 +150,7 @@
     const champs = {};
     conf.champs(ctx.d).forEach((c) => {
       if (c.type === "multi") champs[c.nom] = fd.getAll(c.nom).map(Number);
+      else if (c.type === "oui-non") champs[c.nom] = fd.get(c.nom) !== "false";
       else if (c.type === "nombre") champs[c.nom] = nombreOuNull(fd.get(c.nom));
       else {
         const v = String(fd.get(c.nom) ?? "").trim();
@@ -148,6 +162,7 @@
     if (table === "taches") champs.ordre = champs.ordre ?? 0;
     if (table === "depenses") champs.montant = champs.montant ?? 0;
     if (table === "programme" && !champs.type) champs.type = "moment";
+    if (table === "performances") champs.unite = champs.unite || "";
     if (table === "spectateurs" && champs.montant == null) {
       champs.montant = champs.repas.length * (nombreOuNull(ctx.d.infos.prix_repas_spectateur) ?? 5);
     }
@@ -462,5 +477,33 @@
     ctx.toast(`Les JOC ${annee} sont lancés ! 🎆`);
     await ctx.rafraichir(true);
     ctx.aller("#/programme");
+  };
+
+  // ---------- Records ----------
+
+  E["orga/records"] = (d) => {
+    const { disciplines } = window.JOC_RECORDS.calculer(d);
+    const parDiscipline = grouper(d.performances, "discipline");
+    const nom = (id) => { const p = d.participants.find((x) => x.id === id); return p ? p.surnom || p.prenom : "?"; };
+    const annee = parseInt(d.infos.annee, 10) || new Date().getFullYear();
+    return `
+      ${retour}<h1 class="titre-page">Records</h1>
+      <p class="aide">Saisis les performances (distance, chrono, points). L'app calcule seule les records, les meilleurs de chaque année et les étoiles des profils.</p>
+      <details class="ajout" open><summary class="bouton bouton--secondaire">➕ Ajouter une performance</summary>${formulaire(d, "performances", null).replace('name="annee" value=""', `name="annee" value="${annee}"`)}</details>
+      ${Object.keys(parDiscipline).length ? Object.entries(parDiscipline).sort(([a], [b]) => a.localeCompare(b)).map(([discipline, liste]) => {
+        const r = disciplines[discipline].record;
+        const plusGrand = disciplines[discipline].plusGrand;
+        const tries = [...liste].sort((a, b) => b.annee - a.annee || (plusGrand ? b.valeur - a.valeur : a.valeur - b.valeur));
+        return `
+          <h2 class="titre-section">${esc(discipline)}</h2>
+          <p class="aide">👑 Record : <strong>${window.JOC_RECORDS.format(r.valeur, r.unite)}</strong> par ${esc(nom(r.participantId))} (${r.annee})</p>
+          <div class="carte liste-cases">${tries.map((x) => `
+            <a class="case-ligne" href="${lienModif("performances", x.id)}">
+              <span class="pastille">${x.id === r.id ? "👑" : "🏅"}</span>
+              <span class="case-ligne__texte"><strong>${esc(nom(x.participantId))}</strong><small>${x.annee}</small></span>
+              <span class="case-ligne__montant">${window.JOC_RECORDS.format(x.valeur, x.unite)}</span>
+            </a>`).join("")}</div>`;
+      }).join("") : vide("Aucune performance pour l'instant.")}
+    `;
   };
 })();

@@ -34,7 +34,7 @@
     return `
       <a class="carte ligne" href="#/participant/${encodeURIComponent(p.id)}" style="${eq ? styleCouleur(eq.couleur) : ""}">
         ${portrait(p)}
-        <span class="ligne__texte"><strong>${esc(nomAffiche(p))}</strong><small>${p.age ? `${p.age} ans` : ""}${p.age && p.devise ? " · " : ""}${esc(p.devise)}</small></span>
+        <span class="ligne__texte"><strong>${esc(nomAffiche(p))}${window.JOC_RECORDS.mini(d, p.id)}</strong><small>${p.age ? `${p.age} ans` : ""}${p.age && p.devise ? " · " : ""}${esc(p.devise)}</small></span>
         <span class="presence ${p.present ? "presence--oui" : ""}" title="${p.present ? "Présent" : "Absent"}"></span>
       </a>`;
   }
@@ -103,6 +103,7 @@
       </section>
 
       ${moi ? `<a class="carte salut" href="#/moi">${portrait(moi)}<span><span>Salut <strong>${esc(moi.surnom || moi.prenom)}</strong> !</span><small>${moi.equipeId ? `Équipe ${esc(equipeParId(d, moi.equipeId)?.nom || "")}` : "Pas encore d'équipe"}</small></span></a>` : ""}
+      ${window.JOC_INSCRIPTION ? window.JOC_INSCRIPTION.carteInscription(d) : ""}
 
       ${infos.annonce ? `<div class="carte annonce"><span class="annonce__icone">📣</span><p>${esc(infos.annonce)}</p></div>` : ""}
 
@@ -133,6 +134,7 @@
     return `
       <a class="retour" href="#/">← Accueil</a>
       <h1 class="titre-page">La légende des JOC</h1>
+      ${window.JOC_RECORDS.tableauRecords(d)}
       ${annees.length ? annees.map((annee) => {
         const deLAnnee = lignes.filter((l) => l.annee === annee);
         const joueurs = new Set(deLAnnee.map((l) => l.p.id)).size;
@@ -275,17 +277,20 @@
     if (!p) return vide("Participant introuvable.");
     const eq = equipeParId(d, p.equipeId);
     const estMoi = d.moi && d.moi.id === p.id;
+    const stats = window.JOC_RECORDS.calculer(d).stats[p.id];
     return `
       ${estMoi ? "" : `<a class="retour" href="javascript:history.back()">← Retour</a>`}
       <div class="carte fiche fiche--profil" style="${eq ? styleCouleur(eq.couleur) : ""}">
-        ${portrait(p, "portrait--xl")}
+        ${window.JOC_RECORDS.aureole(portrait(p, "portrait--xl"), stats.etoiles)}
         <h1 class="titre-page">${esc(p.prenom)}${p.nom ? " " + esc(p.nom) : ""}</h1>
+        ${window.JOC_RECORDS.badgeNiveau(stats)}
         ${p.surnom ? `<p class="fiche__surnom">« ${esc(p.surnom)} »</p>` : ""}
         <p class="fiche__meta">${[p.age ? `${p.age} ans` : "", eq ? `${esc(eq.emoji)} ${esc(eq.nom)}` : "Sans équipe"].filter(Boolean).join(" · ")}</p>
         <span class="statut ${p.present ? "statut--present" : "statut--fini"}">${p.present ? "Présent" : "Pas encore là"}</span>
         ${p.devise ? `<p class="fiche__devise">${esc(p.devise)}</p>` : ""}
         ${p.estAdmin ? `<p class="badge-orga">⭐ Orga</p>` : ""}
       </div>
+      ${window.JOC_RECORDS.exploits(d, p.id)}
       <h2 class="titre-section">Historique</h2>
       ${p.palmares.length ? `<ul class="palmares">${p.palmares.map((l) => `<li><span>${esc(l.annee)}</span>${esc(l.titre)}</li>`).join("")}</ul>` : vide("Première édition ? La légende commence maintenant !")}
     `;

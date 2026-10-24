@@ -557,3 +557,69 @@ a.programme__ligne:active { background: var(--joc-creme); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ---------- Étoiles, niveaux et exploits ---------- */
+
+.aureole { position: relative; width: 112px; margin: 18px auto 8px; }
+.aureole .portrait--xl { margin: 0; }
+.aureole i {
+  position: absolute; left: 50%; top: 50%;
+  font-style: normal; font-size: 22px; line-height: 1;
+  transform: translate(-50%, -50%) rotate(var(--angle)) translateY(-70px) rotate(calc(-1 * var(--angle)));
+  filter: drop-shadow(1px 1px 0 var(--joc-encre));
+}
+.niveau { margin: 4px 0 0; font-weight: 900; }
+.niveau__etoiles { color: var(--joc-jaune); -webkit-text-stroke: 1px var(--joc-encre); font-size: 20px; letter-spacing: 1px; }
+.niveau__etoiles span { color: #d8d4c4; }
+.mini-etoiles { font-size: 11px; letter-spacing: -2px; white-space: nowrap; }
+.exploits li span { flex-shrink: 0; -webkit-text-stroke: 0; }
+.exploits li { font-weight: 700; }
+.exploits li > div { flex: 1; min-width: 0; }
+.exploits li a { color: var(--joc-bleu); text-decoration: underline; }
+
+/* ---------- Inscription et Mon compte JOC ---------- */
+
+.appel-inscription {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--joc-jaune);
+}
+.appel-inscription > span:nth-child(2) { flex: 1; display: flex; flex-direction: column; }
+.appel-inscription strong { font-family: var(--titre); font-weight: 400; font-size: 20px; }
+.appel-inscription small { font-size: 13px; }
+.appel-inscription__emoji { font-size: 32px; line-height: 1; }
+.appel-inscription:active, .reponse-inscription:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--joc-encre); }
+.reponse-inscription--oui { --equipe: var(--joc-vert); }
+.reponse-inscription--peut_etre { --equipe: var(--joc-jaune); }
+.reponse-inscription--non { --equipe: var(--joc-rouge); }
+
+.choix-reponse { border: 0; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.choix-reponse legend { font-weight: 800; font-size: 14px; margin-bottom: 6px; }
+.formulaire .choix-reponse label { display: flex; }
+.choix-reponse input { position: absolute; opacity: 0; pointer-events: none; }
+.choix-reponse span {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center;
+  flex: 1; padding: 10px 4px; font-size: 13px; font-weight: 900;
+  border: 2px solid var(--joc-encre); border-radius: 14px; background: var(--surface); cursor: pointer;
+}
+.choix-reponse span b { font-size: 26px; line-height: 1.1; }
+.choix-reponse input:checked + span { background: var(--joc-jaune); box-shadow: var(--ombre-petite); }
+.choix-reponse input:focus-visible + span { outline: 3px solid var(--joc-ciel); outline-offset: 1px; }
+
+.compte-joc { display: flex; flex-direction: column; gap: 10px; }
+.compte-joc > * { margin: 0; }
+.compte-joc .bouton { margin: 0; }
+.compte-joc--ok { background: color-mix(in srgb, var(--joc-vert) 15%, white); }
+.compte-joc__etapes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.compte-joc__etapes span { text-align: center; padding: 8px; border: 2px dashed var(--joc-encre); border-radius: 12px; font-weight: 900; }
+.compte-joc__etapes span.ok { border-style: solid; background: color-mix(in srgb, var(--joc-vert) 25%, white); }
+.compte-joc__reste { font-size: 18px; font-weight: 800; }
+.compte-joc__rib { overflow-wrap: anywhere; font-size: 14px; }
+.compte-joc__rib span { color: var(--texte-doux); }
+
+.compteur--4 { grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; }
+.compteur--4 .compteur__case { padding: 8px 2px; }
+.compteur--4 .compteur__case strong { font-size: 24px; }
+.compteur--4 .compteur__case span { font-size: 11px; line-height: 1.15; display: block; }
+.compteur--4 .compteur__case:nth-child(4) strong { color: var(--texte-doux); }
+.deux-colonnes--egales { grid-template-columns: 1fr 1fr; }
+.compteur--4 .compteur__case:nth-child(2) strong { color: var(--joc-orange); }

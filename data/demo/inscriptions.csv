@@ -1,0 +1,9 @@
+participant_id,annee,reponse,arrivee,commentaire,repondu_le
+p01,2026,oui,Jeudi soir,,2026-10-20T10:00:00Z
+p02,2026,oui,Vendredi midi,J'apporte le barbecue,2026-10-20T11:00:00Z
+p03,2026,peut_etre,,Je confirme en mars,2026-10-21T09:00:00Z
+p05,2026,oui,Jeudi soir,,2026-10-21T18:00:00Z
+p06,2026,non,,Mariage d'un cousin ce week-end là 😢,2026-10-22T08:00:00Z
+p07,2026,oui,Vendredi soir,,2026-10-22T12:00:00Z
+p11,2026,oui,Jeudi soir,,2026-10-23T09:00:00Z
+p16,2026,peut_etre,,,2026-10-23T10:00:00Z
