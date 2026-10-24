@@ -22,12 +22,14 @@
     <div class="grille">
       <a class="carte tuile tuile--menu" href="#/orga/buzzer"><span class="tuile__emoji">🔔</span><strong>Buzzer</strong><small>Questions en direct</small></a>
       <a class="carte tuile tuile--menu" href="#/orga/scores"><span class="tuile__emoji">🏆</span><strong>Résultats</strong><small>Saisir les classements</small></a>
+      <a class="carte tuile tuile--menu" href="#/orga/records"><span class="tuile__emoji">👑</span><strong>Records</strong><small>${d.performances.length} perfs saisies</small></a>
       <a class="carte tuile tuile--menu" href="#/orga/participants"><span class="tuile__emoji">✋</span><strong>Participants</strong><small>${d.participants.filter((p) => p.compteId).length}/${d.participants.length} comptes · ${d.participants.filter((p) => p.present).length} présents</small></a>
       <a class="carte tuile tuile--menu" href="#/orga/programme"><span class="tuile__emoji">📅</span><strong>Programme</strong><small>${d.programme.length} moments</small></a>
       <a class="carte tuile tuile--menu" href="#/orga/epreuves"><span class="tuile__emoji">🎯</span><strong>Épreuves</strong><small>${d.epreuves.length} au programme</small></a>
     </div>
     <h2 class="titre-section">Préparation (CAJOC)</h2>
     <div class="grille">
+      <a class="carte tuile tuile--menu" href="#/orga/inscriptions"><span class="tuile__emoji">📝</span><strong>Inscriptions</strong><small>${Object.values(d.inscriptions).filter((r) => r.reponse === "oui").length} viennent · ${d.participants.length - Object.keys(d.inscriptions).length} sans réponse</small></a>
       <a class="carte tuile tuile--menu" href="#/orga/taches"><span class="tuile__emoji">✅</span><strong>Tâches</strong><small>${taches.filter((t) => t.fait).length}/${taches.length} faites</small></a>
       <a class="carte tuile tuile--menu" href="#/orga/courses"><span class="tuile__emoji">🛒</span><strong>Courses</strong><small>${courses.filter((c) => !c.achete).length} à acheter</small></a>
       <a class="carte tuile tuile--menu" href="#/orga/budget"><span class="tuile__emoji">💶</span><strong>Budget</strong><small>Dépenses et part par personne</small></a>
@@ -337,6 +339,15 @@
       <label>Lieu<input name="lieu" value="${esc(d.infos.lieu)}"></label>
       <label>Annonce (affichée en jaune sur l'accueil)<textarea name="annonce" rows="3">${esc(d.infos.annonce)}</textarea></label>
       <label>Prix d'un repas spectateur (€)<input name="prix_repas_spectateur" type="number" inputmode="decimal" step="any" value="${esc(d.infos.prix_repas_spectateur || "5")}"></label>
+      <fieldset class="bloc-prive">
+        <legend>💳 Paiements (affiché dans « Mon compte JOC »)</legend>
+        <div class="deux-colonnes deux-colonnes--egales">
+          <label>Participation (€)<input name="montant_total" type="number" inputmode="decimal" step="any" value="${esc(d.infos.montant_total || "")}"></label>
+          <label>Acompte (€)<input name="montant_acompte" type="number" inputmode="decimal" step="any" value="${esc(d.infos.montant_acompte || "")}"></label>
+        </div>
+        <label>Lien de paiement (Lydia, Paylib, cagnotte...)<input name="paiement_lien" type="url" placeholder="https://..." value="${esc(d.infos.paiement_lien || "")}"></label>
+        <label>RIB / IBAN pour les virements<input name="paiement_rib" value="${esc(d.infos.paiement_rib || "")}"></label>
+      </fieldset>
       <button class="bouton" type="submit">Enregistrer</button>
     </form>
   `;
@@ -346,6 +357,8 @@
       edition: valeurs.edition.trim(), annee: valeurs.annee.trim(), dates: valeurs.dates.trim(),
       lieu: valeurs.lieu.trim(), annonce: valeurs.annonce.trim(),
       prix_repas_spectateur: valeurs.prix_repas_spectateur.trim() || "5",
+      montant_total: valeurs.montant_total.trim(), montant_acompte: valeurs.montant_acompte.trim(),
+      paiement_lien: valeurs.paiement_lien.trim(), paiement_rib: valeurs.paiement_rib.trim(),
     });
     ctx.toast("Infos enregistrées !");
     await ctx.rafraichir(true);

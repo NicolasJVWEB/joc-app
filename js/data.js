@@ -50,7 +50,7 @@
       return lireCSV(await r.text());
     };
     const noms = ["infos", "equipes", "epreuves", "scores", "participants", "palmares", "programme",
-      "fiches_privees", "suivi_orga", "taches", "courses", "depenses", "spectateurs"];
+      "fiches_privees", "suivi_orga", "taches", "courses", "depenses", "spectateurs", "inscriptions", "performances"];
     const t = Object.fromEntries(noms.map((n, i) => [n, null]));
     (await Promise.all(noms.map(lire))).forEach((lignes, i) => { t[noms[i]] = lignes; });
     // Les CSV ne connaissent que du texte : on remet les oui/non et les listes
@@ -61,8 +61,12 @@
     t.courses.forEach((l) => { l.achete = oui(l.achete); });
     t.depenses.forEach((l) => { l.rembourse = oui(l.rembourse); });
     t.spectateurs.forEach((l) => { l.paye = oui(l.paye); l.repas = l.repas ? l.repas.split(" ") : []; });
+    t.performances.forEach((l) => { l.plus_grand_gagne = l.plus_grand_gagne !== "non"; });
     // En démo, "moi" = le premier participant (orga)
-    return { ...t, photos: {}, moiId: t.participants[0]?.id || null };
+    const moiId = t.participants[0]?.id || null;
+    const s = t.suivi_orga.find((l) => l.participant_id === moiId);
+    const mon_paiement = s ? { acompte_paye: s.acompte_paye, solde_paye: s.solde_paye, reste_du: s.reste_du } : null;
+    return { ...t, mon_paiement, photos: {}, moiId };
   }
 
   // ---------- Supabase ----------
@@ -75,6 +79,11 @@
     return data;
   }
 
+  // Tables ajoutées par une mise à jour de la base : si elle n'a pas encore été relancée, l'app marche quand même
+  async function lireTableOptionnelle(table) {
+    try { return await lireTable(table); } catch (e) { console.warn(`Table ${table} absente`, e); return []; }
+  }
+
   async function chargerSupabase() {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) return null;
@@ -83,6 +92,7 @@
       lireTable("scores"), lireTable("participants", "prenom"), lireTable("palmares", "annee"),
       lireTable("programme"), lireTable("fiches_privees"),
     ]);
+    const [inscriptions, performances] = await Promise.all([lireTableOptionnelle("inscriptions"), lireTableOptionnelle("performances")]);
     // Tables de gestion : seulement pour les orgas (les autres n'y ont pas accès)
     const moiLigne = participants.find((p) => p.compte_id === session.user.id);
     const orga = { suivi_orga: [], taches: [], courses: [], depenses: [], spectateurs: [] };
@@ -97,8 +107,14 @@
       const { data } = await sb.storage.from("photos").createSignedUrls(chemins, DUREE_PHOTO);
       (data || []).forEach((d) => { if (d.signedUrl) photos[d.path] = d.signedUrl; });
     }
+    // Mes paiements (sans voir mes niveaux ni les notes des orgas)
+    let mon_paiement = null;
+    if (moiLigne) {
+      const r = await sb.rpc("mon_paiement");
+      if (!r.error && r.data && r.data.length) mon_paiement = r.data[0];
+    }
     return { infos, equipes, epreuves, scores, participants, palmares, programme, fiches_privees, ...orga,
-      photos, moiId: moiLigne ? moiLigne.id : null };
+      inscriptions, performances, mon_paiement, photos, moiId: moiLigne ? moiLigne.id : null };
   }
 
   // ---------- Modèle prêt à afficher ----------
@@ -224,8 +240,22 @@
         repas: (l.repas || []).map(String), montant: nombre(l.montant) ?? 0, paye: !!l.paye })),
     };
 
+    // Inscriptions à l'édition en cours (par participant)
+    const anneeEnCours = parseInt(infos.annee, 10);
+    const inscriptions = Object.fromEntries((brut.inscriptions || [])
+      .filter((l) => parseInt(l.annee, 10) === anneeEnCours)
+      .map((l) => [String(l.participant_id), { reponse: l.reponse, arrivee: l.arrivee || "", commentaire: l.commentaire || "", reponduLe: l.repondu_le || null }]));
+
+    const performances = (brut.performances || []).map((l) => ({
+      id: String(l.id), discipline: l.discipline || "", participantId: String(l.participant_id),
+      annee: parseInt(l.annee, 10), valeur: nombre(l.valeur) ?? 0, unite: l.unite || "", plusGrandGagne: l.plus_grand_gagne !== false,
+    }));
+
+    const mp = brut.mon_paiement;
+    const monPaiement = mp ? { acompte: !!mp.acompte_paye, solde: !!mp.solde_paye, resteDu: nombre(mp.reste_du) || 0 } : null;
+
     const moi = participants.find((p) => p.id === String(brut.moiId)) || null;
-    return { infos, equipes, epreuves, scores, classement, participants, programme, orga, moi };
+    return { infos, equipes, epreuves, scores, classement, participants, programme, orga, moi, inscriptions, performances, monPaiement };
   }
 
   async function charger() {
@@ -462,6 +492,13 @@
         { cle: "edition", valeur: choix.edition }, { cle: "annee", valeur: String(choix.annee) },
         { cle: "dates", valeur: choix.dates }, { cle: "annonce", valeur: `Les JOC ${choix.annee} se préparent ! 🎆` },
       ]));
+    },
+    // Réponse à l'inscription de l'édition (crée ou met à jour)
+    async repondreInscription(participantId, annee, champs) {
+      demoInterdit();
+      verifier(await sb.from("inscriptions").upsert(
+        { participant_id: participantId, annee, ...champs, repondu_le: new Date().toISOString() },
+        { onConflict: "participant_id,annee" }));
     },
     // Petite trace de passage, pour que les orgas voient qui utilise l'app
     async marquerVisite(id) {

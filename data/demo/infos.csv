@@ -5,3 +5,7 @@ dates,Données de démonstration
 lieu,
 annonce,"Bienvenue aux JOC ! Rendez-vous à 10h pour la cérémonie d'ouverture."
 prix_repas_spectateur,5
+montant_total,130
+montant_acompte,50
+paiement_lien,https://lydia-app.com/
+paiement_rib,FR76 0000 0000 0000 0000 0000 000 (fictif)

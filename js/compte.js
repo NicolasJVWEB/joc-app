@@ -190,6 +190,7 @@
     if (!d.moi) return vide("Profil introuvable.");
     return `
       ${E.participant(d, d.moi.id)}
+      ${window.JOC_INSCRIPTION ? window.JOC_INSCRIPTION.carteInscription(d) + window.JOC_INSCRIPTION.carteCompte(d) : ""}
       <div class="actions">
         <a class="bouton" href="#/moi/modifier">✏️ Modifier mon profil</a>
         <button class="bouton ${d.moi.present ? "bouton--secondaire" : "bouton--vert"}" data-action="basculer-presence">${d.moi.present ? "Je ne suis plus là" : "✋ Je suis là !"}</button>

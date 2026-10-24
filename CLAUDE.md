@@ -30,6 +30,9 @@
 - **Buzzer en direct** (`js/buzzer.js`) : l'orga ouvre une question (Orga > Buzzer), tous les téléphones connectés basculent sur un gros bouton BUZZ. Tables `buzzer` (état, une ligne) et `buzzes` (un buzz par personne et par question, heure fixée par le serveur via trigger). Temps réel Supabase (publication `supabase_realtime`) + vérification toutes les 2 s en secours. Mode grand écran pour vidéoprojecteur.
 - **Suivi des comptes** (Orga > Participants) : comptes reliés / pas encore venus / nouveaux / vus en 24 h, colonnes `rejoint_le`, `derniere_visite`, `nouveau` sur `participants` (protégées contre la triche par le trigger).
 - **Inscription** : « Déjà venu·e aux JOC ? » (on retrouve son prénom, avec recherche) ou « Première fois aux JOC ? » (on crée son profil).
+- **Je viens aux JOC** (`js/inscription.js`, remplace le Google Form) : carte « JOC {année} : tu viens ? » sur l'accueil et le profil, écran `#/inscription` (oui / peut-être / non, arrivée, t-shirt, surnom, régime, mot pour les orgas). Table `inscriptions` (une ligne par personne et par année). Orga > Inscriptions : compteurs, filtres, prénoms à relancer, réponse à la place de quelqu'un.
+- **Mon compte JOC** : acompte / solde cochés par les orgas, reste à payer, lien de paiement (Lydia...) et RIB à copier. Montants et moyens de paiement dans Orga > Infos (`montant_total`, `montant_acompte`, `paiement_lien`, `paiement_rib`). Chacun ne lit que sa propre ligne via la fonction `mon_paiement()`.
+- **Records et étoiles** (`js/records.js`) : les orgas saisissent les performances (Orga > Records, table `performances`). L'app calcule record de tous les temps, meilleur·e de chaque année, records battus, et donne 0 à 5 étoiles autour de la photo (Recrue > Copaing > Habitué·e > Pilier > Champion·ne > Légende) selon participations, trophées et exploits. Bloc « Exploits » sur chaque profil, tableau des records dans la légende.
 - L'app se met à jour toute seule (toutes les 60 s et à chaque retour sur l'app), sans redessiner un écran où l'on est en train de saisir.
 
 ## Règles dures
@@ -85,6 +88,8 @@ js/compte.js            Connexion, inscription avec le code, profil
 js/orga.js              Espace orga (menu, résultats, épreuves, participants, équipes, infos)
 js/gestion.js           Gestion CAJOC (programme, tâches, courses, budget, paiements, spectateurs, t-shirts, niveaux, nouvelle édition)
 js/buzzer.js            Buzzer en direct (joueurs, pilotage orga, grand écran)
+js/records.js           Records, exploits, étoiles et niveaux des profils
+js/inscription.js       Je viens aux JOC, Mon compte JOC (paiements), suivi orga des inscriptions
 js/app.js               Navigation, connexion, rafraîchissement, actions
 assets/vendor/          supabase-js auto-hébergé
 supabase/schema.sql     Base de données, sécurité, données de départ
