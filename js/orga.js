@@ -259,6 +259,7 @@
         <h1 class="titre-page">${esc(nomAffiche(p))}</h1>
         <p class="fiche__meta">${p.compteId ? "Compte créé" : "Pas encore de compte"}</p>
       </div>
+      ${estMoi ? "" : `<button class="bouton bouton--secondaire" data-action="voir-comme" data-id="${esc(p.id)}">👀 Voir l'app comme ${esc(p.surnom || p.prenom)}</button>`}
       <h2 class="titre-section">Historique et palmarès</h2>
       ${p.palmares.length ? `<ul class="palmares">${p.palmares.map((l) => `
         <li><span>${esc(l.annee)}</span>${esc(l.titre)}<button class="lien lien--danger" data-action="supprimer-palmares" data-id="${esc(l.id)}" aria-label="Supprimer">✕</button></li>`).join("")}</ul>` : ""}
@@ -279,6 +280,9 @@
       ${estMoi ? "" : `<button class="lien lien--danger" data-action="supprimer-participant" data-id="${esc(p.id)}">Supprimer ce participant</button>`}
     `;
   };
+
+  // Aperçu en lecture seule de l'app telle que la voit ce participant
+  A["voir-comme"] = ({ el, ctx }) => { ctx.voirComme(el.dataset.id); };
 
   A["ajout-palmares"] = async ({ el, valeurs, ctx }) => {
     await DATA.ecrire.ajouterPalmares(el.dataset.id, parseInt(valeurs.annee, 10), valeurs.titre.trim());

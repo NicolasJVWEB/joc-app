@@ -6,7 +6,7 @@
 (function () {
   const CFG = window.JOC_CONFIG;
   const DATA = window.JOC_DATA;
-  const { vide, toast, profilComplet } = window.JOC_UI;
+  const { esc, vide, toast, profilComplet } = window.JOC_UI;
   const INSCRIPTION = window.JOC_INSCRIPTION;
   const E = window.JOC_ECRANS;
   const A = window.JOC_ACTIONS;
@@ -16,6 +16,7 @@
   let donnees = null;
   let connecte = DATA.estDemo;
   let recuperationMdp = false;
+  let apercuDe = null; // orga qui regarde l'app comme un participant (lecture seule)
 
   // Écrans avec formulaire : le rafraîchissement automatique ne les redessine pas
   const FORMULAIRES = ["connexion", "rejoindre", "nouveau-mdp", "profil-essentiel", "moi/modifier", "orga/scores", "orga/epreuve",
@@ -33,14 +34,26 @@
     return { cle: morceaux[0] || "", param: morceaux[1] || "" };
   }
 
+  // Données vues à l'écran : les miennes, ou celles d'un participant pendant un aperçu orga.
+  // L'orga lit déjà tout ce que ce participant voit (fiches, inscriptions, paiements).
+  function modele() {
+    if (!apercuDe || !donnees?.moi?.estAdmin) return donnees;
+    const p = donnees.participants.find((x) => x.id === apercuDe);
+    if (!p) return donnees;
+    const s = donnees.orga.suivi[p.id];
+    const monPaiement = s && (s.acompte || s.solde || s.resteDu) ? { acompte: s.acompte, solde: s.solde, resteDu: s.resteDu } : null;
+    return { ...donnees, moi: { ...p, estAdmin: false }, monPaiement };
+  }
+
   // Quel écran montrer, selon la connexion et les droits
   function ecranCourant() {
+    const d = modele();
     if (!DATA.estDemo) {
       if (recuperationMdp) return { cle: "nouveau-mdp", param: "" };
       if (!connecte) return { cle: "connexion", param: "" };
-      if (donnees && !donnees.moi) return { cle: "rejoindre", param: "" };
+      if (d && !d.moi) return { cle: "rejoindre", param: "" };
       // T-shirt et régime obligatoires avant d'entrer dans l'app
-      if (donnees && !profilComplet(donnees.moi)) return { cle: "profil-essentiel", param: "" };
+      if (d && !profilComplet(d.moi)) return { cle: "profil-essentiel", param: "" };
     }
     const adresse = lireAdresse();
     if (!adresse.cle) adresse.cle = "accueil";
@@ -52,19 +65,33 @@
     const { cle, param } = ecranCourant();
     const horsApp = HORS_APP.includes(cle);
     const racine = cle.split("/")[0];
+    const d = modele();
     document.body.classList.toggle("sans-nav", horsApp);
 
-    if (horsApp) vue.innerHTML = E[cle](donnees);
-    else if (!donnees) return; // en attente des données
-    else if (cle.startsWith("orga") && !donnees.moi?.estAdmin) vue.innerHTML = vide("Réservé aux orgas.");
-    else if (INSCRIPTION.ECRANS_EDITION.includes(racine) && INSCRIPTION.editionVerrouillee(donnees)) vue.innerHTML = E.verrou(donnees);
-    else vue.innerHTML = E[cle](donnees, param);
+    if (horsApp) vue.innerHTML = E[cle](d);
+    else if (!d) return; // en attente des données
+    else if (cle.startsWith("orga") && !d.moi?.estAdmin) vue.innerHTML = vide("Réservé aux orgas.");
+    else if (INSCRIPTION.ECRANS_EDITION.includes(racine) && INSCRIPTION.editionVerrouillee(d)) vue.innerHTML = E.verrou(d);
+    else vue.innerHTML = E[cle](d, param);
+    if (d !== donnees) vue.insertAdjacentHTML("afterbegin", bandeauApercu(d.moi));
 
     const onglet = ONGLET_ACTIF[racine] ?? (racine === "accueil" ? "" : racine);
     document.querySelectorAll(".nav a").forEach((a) => a.classList.toggle("actif", a.dataset.onglet === onglet));
     // Onglet Orga : seulement pour les organisateurs
-    document.querySelector(".nav__orga").hidden = !donnees?.moi?.estAdmin;
+    document.querySelector(".nav__orga").hidden = !d?.moi?.estAdmin;
   }
+
+  const bandeauApercu = (p) => `
+    <div class="bandeau-apercu" role="status">
+      <span>👀 Tu vois l'app comme <strong>${esc(p.surnom || p.prenom)}</strong> · rien n'est modifiable</span>
+      <button class="bouton bouton--secondaire" data-action="quitter-apercu">Quitter</button>
+    </div>`;
+
+  A["quitter-apercu"] = ({ ctx }) => {
+    const id = apercuDe;
+    apercuDe = null;
+    ctx.aller(`#/orga/participant/${encodeURIComponent(id)}`);
+  };
 
   function majEtat(resultat) {
     const heure = new Date(resultat.date).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
@@ -119,11 +146,24 @@
     aller(adresse) {
       if (location.hash === adresse) afficher(); else location.hash = adresse;
     },
+    voirComme(id) {
+      apercuDe = id;
+      ctx.aller("#/");
+      window.scrollTo(0, 0);
+    },
   };
+
+  // Pendant un aperçu, seules ces actions restent possibles (rien n'est enregistré)
+  const ACTIONS_APERCU = ["quitter-apercu", "copier"];
 
   async function lancer(nom, details) {
     const action = A[nom];
     if (!action) return;
+    if (apercuDe && !ACTIONS_APERCU.includes(nom)) {
+      toast("Aperçu : rien n'est modifiable. Quitte l'aperçu pour agir.", "alerte");
+      afficher(); // remet en place une case ou une liste touchée
+      return;
+    }
     try { await action({ ...details, ctx }); }
     catch (erreur) { console.warn(erreur); toast(erreur.message || "Une erreur est survenue.", "alerte"); }
   }

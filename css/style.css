@@ -145,6 +145,16 @@ a.carte:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--joc
 .verrou p { margin: 0; }
 .verrou__icone { font-size: 3rem; line-height: 1; }
 
+/* Aperçu orga « Voir l'app comme » */
+.bandeau-apercu {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin-bottom: 14px; padding: 10px 12px;
+  background: var(--joc-jaune); color: var(--joc-encre);
+  border: var(--trait); border-radius: 14px; box-shadow: var(--ombre-petite);
+  font-size: .9rem;
+}
+.bandeau-apercu .bouton { width: auto; margin: 0; padding: 6px 12px; flex: none; }
+
 /* Accueil */
 .hero { text-align: center; padding: 4px 0 18px; }
 .hero__logo { width: 180px; height: auto; margin: 0 auto 8px; filter: drop-shadow(0 6px 10px rgba(27, 21, 51, .18)); }
