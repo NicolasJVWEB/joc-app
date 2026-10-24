@@ -30,7 +30,7 @@
 
   // Quand un orga ouvre une nouvelle question : tout le monde bascule sur le buzzer
   function annoncer() {
-    if (estOrga()) return;
+    if (estOrga() || window.JOC_INSCRIPTION?.editionVerrouillee(etat.donnees)) return;
     const enSaisie = document.activeElement && document.activeElement.matches("input, textarea, select");
     if (!surEcranBuzzer() && !enSaisie) location.hash = "#/buzzer";
     toast("🔔 Nouvelle question : à vos buzzers !");

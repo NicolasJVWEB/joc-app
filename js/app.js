@@ -6,7 +6,8 @@
 (function () {
   const CFG = window.JOC_CONFIG;
   const DATA = window.JOC_DATA;
-  const { vide, toast } = window.JOC_UI;
+  const { vide, toast, profilComplet } = window.JOC_UI;
+  const INSCRIPTION = window.JOC_INSCRIPTION;
   const E = window.JOC_ECRANS;
   const A = window.JOC_ACTIONS;
   const vue = document.getElementById("vue");
@@ -17,10 +18,12 @@
   let recuperationMdp = false;
 
   // Écrans avec formulaire : le rafraîchissement automatique ne les redessine pas
-  const FORMULAIRES = ["connexion", "rejoindre", "nouveau-mdp", "moi/modifier", "orga/scores", "orga/epreuve",
+  const FORMULAIRES = ["connexion", "rejoindre", "nouveau-mdp", "profil-essentiel", "moi/modifier", "orga/scores", "orga/epreuve",
     "orga/participant", "orga/equipes", "orga/infos", "orga/modifier", "orga/courses", "orga/taches",
     "orga/budget", "orga/spectateurs", "orga/paiements", "orga/niveaux", "orga/programme", "orga/edition", "buzzer", "orga/buzzer", "inscription", "orga/records"];
   const ONGLET_ACTIF = { epreuve: "programme", epreuves: "programme", equipe: "equipes", presents: "equipes", participant: "equipes", historique: "", buzzer: "programme", inscription: "" };
+  // Écrans sans barre d'onglets (avant d'entrer dans l'app)
+  const HORS_APP = ["connexion", "rejoindre", "nouveau-mdp", "profil-essentiel"];
 
   // "#/orga/scores/12" -> { cle: "orga/scores", param: "12" }
   function lireAdresse() {
@@ -36,24 +39,27 @@
       if (recuperationMdp) return { cle: "nouveau-mdp", param: "" };
       if (!connecte) return { cle: "connexion", param: "" };
       if (donnees && !donnees.moi) return { cle: "rejoindre", param: "" };
+      // T-shirt et régime obligatoires avant d'entrer dans l'app
+      if (donnees && !profilComplet(donnees.moi)) return { cle: "profil-essentiel", param: "" };
     }
     const adresse = lireAdresse();
     if (!adresse.cle) adresse.cle = "accueil";
-    if (!E[adresse.cle] || ["connexion", "rejoindre", "nouveau-mdp"].includes(adresse.cle)) adresse.cle = "accueil";
+    if (!E[adresse.cle] || HORS_APP.includes(adresse.cle)) adresse.cle = "accueil";
     return adresse;
   }
 
   function afficher() {
     const { cle, param } = ecranCourant();
-    const horsApp = ["connexion", "rejoindre", "nouveau-mdp"].includes(cle);
+    const horsApp = HORS_APP.includes(cle);
+    const racine = cle.split("/")[0];
     document.body.classList.toggle("sans-nav", horsApp);
 
     if (horsApp) vue.innerHTML = E[cle](donnees);
     else if (!donnees) return; // en attente des données
     else if (cle.startsWith("orga") && !donnees.moi?.estAdmin) vue.innerHTML = vide("Réservé aux orgas.");
+    else if (INSCRIPTION.ECRANS_EDITION.includes(racine) && INSCRIPTION.editionVerrouillee(donnees)) vue.innerHTML = E.verrou(donnees);
     else vue.innerHTML = E[cle](donnees, param);
 
-    const racine = cle.split("/")[0];
     const onglet = ONGLET_ACTIF[racine] ?? (racine === "accueil" ? "" : racine);
     document.querySelectorAll(".nav a").forEach((a) => a.classList.toggle("actif", a.dataset.onglet === onglet));
     // Onglet Orga : seulement pour les organisateurs

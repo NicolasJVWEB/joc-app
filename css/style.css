@@ -141,6 +141,9 @@ h1, h2, p { margin: 0; }
 a.carte { transition: transform .08s, box-shadow .08s; }
 a.carte:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--joc-encre); }
 .vide { text-align: center; color: var(--texte-doux); }
+.verrou { display: grid; gap: 8px; justify-items: center; }
+.verrou p { margin: 0; }
+.verrou__icone { font-size: 3rem; line-height: 1; }
 
 /* Accueil */
 .hero { text-align: center; padding: 4px 0 18px; }

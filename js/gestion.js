@@ -5,7 +5,7 @@
  */
 (function () {
   const DATA = window.JOC_DATA;
-  const { esc, styleCouleur, vide, nomAffiche } = window.JOC_UI;
+  const { esc, styleCouleur, vide, nomAffiche, TAILLES, REGIME_AUCUN } = window.JOC_UI;
   const E = (window.JOC_ECRANS = window.JOC_ECRANS || {});
   const A = (window.JOC_ACTIONS = window.JOC_ACTIONS || {});
 
@@ -353,11 +353,13 @@
   // ---------- T-shirts, régimes, arrivées ----------
 
   E["orga/tshirts"] = (d) => {
-    const tailles = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
+    const tailles = TAILLES;
     const parTaille = grouper(d.participants.filter((p) => p.taille), "taille");
     const sansTaille = d.participants.filter((p) => !p.taille);
-    const regimes = d.participants.filter((p) => p.regime);
-    const arrivees = grouper(d.participants.filter((p) => p.arrivee), "arrivee");
+    const regimes = d.participants.filter((p) => p.regime && p.regime !== REGIME_AUCUN);
+    // Arrivées : celles données dans le formulaire de l'édition en cours
+    const arrivees = grouper(d.participants.filter((p) => d.inscriptions[p.id]?.arrivee)
+      .map((p) => ({ ...p, arrivee: d.inscriptions[p.id].arrivee })), "arrivee");
     return `
       ${retour}<h1 class="titre-page">T-shirts et repas</h1>
       <h2 class="titre-section">Commande de t-shirts</h2>

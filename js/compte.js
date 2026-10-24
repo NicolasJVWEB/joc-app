@@ -3,7 +3,7 @@
  */
 (function () {
   const DATA = window.JOC_DATA;
-  const { esc, portrait, AVATARS, vide } = window.JOC_UI;
+  const { esc, portrait, AVATARS, TAILLES, REGIME_AUCUN, vide } = window.JOC_UI;
   const E = (window.JOC_ECRANS = window.JOC_ECRANS || {});
   const A = (window.JOC_ACTIONS = window.JOC_ACTIONS || {});
 
@@ -173,7 +173,7 @@
     etat.liste = null;
     ctx.toast("Bienvenue ! Complète ton profil 😎");
     await ctx.rafraichir(true);
-    ctx.aller("#/moi/modifier");
+    ctx.aller("#/");
   };
 
   A["nouveau-participant"] = async ({ valeurs, ctx }) => {
@@ -181,7 +181,38 @@
     etat.liste = null;
     ctx.toast("Bienvenue ! Complète ton profil 😎");
     await ctx.rafraichir(true);
-    ctx.aller("#/moi/modifier");
+    ctx.aller("#/");
+  };
+
+  // ---------- Infos obligatoires (t-shirt et régime) ----------
+  // Tant qu'elles manquent, l'app n'affiche que cet écran.
+
+  const champsTailleRegime = (p) => `
+    <label>Taille de t-shirt<select name="taille" required>
+      <option value="">Choisis ta taille</option>
+      ${TAILLES.map((t) => `<option value="${t}" ${t === p.taille ? "selected" : ""}>${t}</option>`).join("")}
+    </select></label>
+    <label>Régime alimentaire<input name="regime" value="${esc(p.regime)}" maxlength="200" required placeholder="Végé, sans gluten, pas de porc..."></label>
+    <button class="lien" type="button" data-action="regime-aucun">🍽️ Je mange de tout</button>`;
+
+  E["profil-essentiel"] = (d) => `
+    <h1 class="titre-page">Encore 2 infos</h1>
+    <form class="carte formulaire" data-form="profil-essentiel">
+      <p>Salut <strong>${esc(d.moi.prenom)}</strong> ! Pour le t-shirt et les repas, les orgas ont besoin de ça. Tu ne le rempliras qu'une fois, tu pourras le changer dans ton profil.</p>
+      ${champsTailleRegime(d.moi)}
+      <p class="aide">🔒 Visible seulement par toi et les orgas.</p>
+      <button class="bouton" type="submit">C'est parti !</button>
+    </form>
+    <button class="lien" data-action="deconnexion">Se déconnecter</button>
+  `;
+
+  A["regime-aucun"] = ({ el }) => { el.form.regime.value = REGIME_AUCUN; };
+
+  A["profil-essentiel"] = async ({ valeurs, ctx }) => {
+    await DATA.ecrire.majFiche("fiches_privees", ctx.d.moi.id, { taille_tshirt: valeurs.taille, regime: valeurs.regime.trim() });
+    ctx.toast("Merci ! Bienvenue aux JOC 🎉");
+    await ctx.rafraichir(true);
+    ctx.aller(ctx.d.infos.annee && !ctx.d.inscriptions[ctx.d.moi.id] ? "#/inscription" : "#/");
   };
 
   // ---------- Mon profil ----------
@@ -221,11 +252,7 @@
         <label>Ta devise<input name="devise" value="${esc(p.devise)}" maxlength="140" placeholder="Une phrase qui te résume"></label>
         <fieldset class="bloc-prive">
           <legend>🔒 Pour les orgas uniquement</legend>
-          <div class="deux-colonnes">
-            <label>T-shirt<select name="taille">${["", "XS", "S", "M", "L", "XL", "XXL", "XXXL"].map((t) => `<option value="${t}" ${t === p.taille ? "selected" : ""}>${t || "-"}</option>`).join("")}</select></label>
-            <label>Arrivée<input name="arrivee" value="${esc(p.arrivee)}" maxlength="60" placeholder="Jeudi soir"></label>
-          </div>
-          <label>Régime alimentaire<input name="regime" value="${esc(p.regime)}" maxlength="200" placeholder="Végé, sans gluten, pas de porc..."></label>
+          ${champsTailleRegime(p)}
         </fieldset>
         <fieldset class="avatars">
           <legend>Ton avatar ${p.photo ? "(si pas de photo)" : ""}</legend>
@@ -247,8 +274,7 @@
       avatar: valeurs.avatar || "🙂",
     });
     await DATA.ecrire.majFiche("fiches_privees", ctx.d.moi.id, {
-      taille_tshirt: valeurs.taille || "",
-      arrivee: valeurs.arrivee.trim(),
+      taille_tshirt: valeurs.taille,
       regime: valeurs.regime.trim(),
     });
     ctx.toast("Profil enregistré !");

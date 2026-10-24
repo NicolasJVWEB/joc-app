@@ -14,9 +14,23 @@
     non: { emoji: "😢", libelle: "Pas cette fois", court: "Ne vient pas" },
   };
   const ARRIVEES = ["Jeudi soir", "Vendredi matin", "Vendredi midi", "Vendredi après-midi", "Vendredi soir", "Samedi"];
-  const TAILLES = ["", "XS", "S", "M", "L", "XL", "XXL", "XXXL"];
   const euros = (n) => `${(Math.round((n || 0) * 100) / 100).toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })} €`;
   const nombre = (v) => { const n = parseFloat(String(v ?? "").replace(",", ".")); return isNaN(n) ? null : n; };
+
+  // Tant qu'on n'a pas répondu au formulaire de l'édition, ce qui la concerne reste fermé
+  // (classement, programme, équipes...). Les orgas voient tout.
+  const ECRANS_EDITION = ["classement", "programme", "epreuves", "epreuve", "equipes", "equipe", "presents", "buzzer"];
+  function editionVerrouillee(d) {
+    return !!(d && d.moi && !d.moi.estAdmin && d.infos.annee && !d.inscriptions[d.moi.id]);
+  }
+
+  E.verrou = (d) => `
+    <div class="carte vide verrou">
+      <p class="verrou__icone">🔒</p>
+      <p><strong>Réponds d'abord pour les JOC ${esc(d.infos.annee)} !</strong></p>
+      <p>Programme, équipes et classement s'ouvrent dès que tu as dit si tu viens.</p>
+      <a class="bouton" href="#/inscription">🎆 Je réponds</a>
+    </div>`;
 
   // ---------- Cartes (accueil et profil) ----------
 
@@ -94,11 +108,8 @@
           <option value="">-</option>
           ${[...new Set([...ARRIVEES, arrivee].filter(Boolean))].map((a) => `<option ${a === arrivee ? "selected" : ""}>${esc(a)}</option>`).join("")}
         </select></label>
-        <div class="deux-colonnes">
-          <label>T-shirt<select name="taille">${TAILLES.map((t) => `<option value="${t}" ${t === d.moi.taille ? "selected" : ""}>${t || "-"}</option>`).join("")}</select></label>
-          <label>Surnom (au dos)<input name="surnom" value="${esc(d.moi.surnom)}" maxlength="40" placeholder="La Fusée"></label>
-        </div>
-        <label>Régime alimentaire<input name="regime" value="${esc(d.moi.regime)}" maxlength="200" placeholder="Végé, sans gluten, pas de porc..."></label>
+        <p class="aide rappel-profil">👕 T-shirt ${esc(d.moi.taille || "-")}${d.moi.surnom ? ` · au dos : ${esc(d.moi.surnom)}` : ""} · 🍽️ ${esc(d.moi.regime || "-")}<br>
+          Ça a changé ? <a href="#/moi/modifier">Modifie ton profil</a></p>
         <label>Un mot pour les orgas ?<textarea name="commentaire" rows="2" maxlength="300">${esc(r.commentaire || "")}</textarea></label>
         <button class="bouton" type="submit">Envoyer ma réponse</button>
       </form>
@@ -112,8 +123,7 @@
     await DATA.ecrire.repondreInscription(moi.id, annee, {
       reponse: valeurs.reponse, arrivee: valeurs.arrivee || "", commentaire: valeurs.commentaire.trim(),
     });
-    await DATA.ecrire.majFiche("fiches_privees", moi.id, { taille_tshirt: valeurs.taille || "", regime: valeurs.regime.trim(), arrivee: valeurs.arrivee || "" });
-    if ((valeurs.surnom.trim() || null) !== (moi.surnom || null)) await DATA.ecrire.majParticipant(moi.id, { surnom: valeurs.surnom.trim() || null });
+    await DATA.ecrire.majFiche("fiches_privees", moi.id, { arrivee: valeurs.arrivee || "" });
     toast(valeurs.reponse === "oui" ? "Trop bien, à bientôt aux JOC ! 🎉" : valeurs.reponse === "non" ? "Dommage ! On pensera à toi 😢" : "Noté ! Tiens-nous au courant 🤔");
     await ctx.rafraichir(true);
     ctx.aller("#/");
@@ -168,5 +178,5 @@
     await ctx.rafraichir(false);
   };
 
-  window.JOC_INSCRIPTION = { carteInscription, carteCompte, REPONSES };
+  window.JOC_INSCRIPTION = { carteInscription, carteCompte, REPONSES, ECRANS_EDITION, editionVerrouillee };
 })();

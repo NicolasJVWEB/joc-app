@@ -48,6 +48,11 @@
     return p.surnom ? `${p.prenom} « ${p.surnom} »` : p.prenom;
   }
 
+  // Infos de profil obligatoires (elles ne changent pas d'une édition à l'autre)
+  const TAILLES = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
+  const REGIME_AUCUN = "Rien de spécial";
+  function profilComplet(p) { return !!(p && p.taille && p.regime); }
+
   let minuteur = null;
   function toast(message, type = "") {
     const el = document.getElementById("toast");
@@ -57,5 +62,5 @@
     minuteur = setTimeout(() => { el.className = "toast"; }, 3200);
   }
 
-  window.JOC_UI = { COULEURS, MEDAILLES, AVATARS, STATUTS, esc, styleCouleur, statut, pts, pluriel, vide, place, portrait, nomAffiche, toast };
+  window.JOC_UI = { COULEURS, MEDAILLES, AVATARS, STATUTS, TAILLES, REGIME_AUCUN, esc, styleCouleur, statut, pts, pluriel, vide, place, portrait, nomAffiche, profilComplet, toast };
 })();
